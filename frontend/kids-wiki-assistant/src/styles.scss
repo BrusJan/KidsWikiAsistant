@@ -1,0 +1,243 @@
+@import "@fortawesome/fontawesome-free/css/all.min.css";
+// Import Google Font
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap');
+
+// Tailwind imports
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+// Global font configuration
+@layer base {
+  html {
+    font-family: 'Quicksand', system-ui, sans-serif;
+  }
+}
+
+// Keep custom CSS for specific components
+@layer components {
+  .chat-bubble {
+    @apply bg-bubble rounded-2xl p-4 my-2.5 mx-auto max-w-3xl shadow relative;
+    
+    .delete-button {
+      @apply absolute top-2.5 right-2.5 w-5 h-5 border-none bg-transparent opacity-60 cursor-pointer p-0 hover:opacity-100;
+      
+      &::before,
+      &::after {
+        content: '';
+        @apply absolute w-0.5 h-4 bg-gray-600 top-1/2 left-1/2;
+      }
+      
+      &::before {
+        @apply -translate-x-1/2 -translate-y-1/2 rotate-45;
+      }
+      
+      &::after {
+        @apply -translate-x-1/2 -translate-y-1/2 -rotate-45;
+      }
+    }
+
+    .wiki-link {
+      @apply inline-flex items-center gap-2 text-primary no-underline text-sm mt-4 hover:underline;
+    }
+  }
+
+  .search-form {
+    @apply flex justify-center gap-2 mb-8;
+    
+    input {
+      @apply w-full py-3 px-4 pl-10 text-base border-2 border-input-border rounded outline-none focus:border-primary focus:shadow-[0_0_0_3px_rgba(247,165,23,0.25)] disabled:bg-gray-100 disabled:cursor-not-allowed;
+    }
+    
+    button {
+      @apply py-3 px-6 text-base bg-primary border-none rounded text-white cursor-pointer flex items-center gap-2 hover:bg-[#e08e06] disabled:opacity-70 disabled:cursor-not-allowed;
+      
+      &.loading {
+        @apply relative text-transparent;
+        
+        &::after {
+          content: '';
+          @apply absolute w-4 h-4 top-1/2 left-1/2 -mt-2 -ml-2 border-2 border-white/30 rounded-full border-t-white animate-spin;
+        }
+      }
+    }
+  }
+}
+
+:root {
+  --color-primary: #f7a517;
+  --color-background: #f3d8bd;
+  --color-input-border: #d2d5c0;
+  --color-bubble: #e8f4f8;
+  --color-text: #333;
+}
+
+body, html {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-size: 16px;
+  color: var(--color-text);
+}
+
+body {
+  background: var(--color-background);
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.title {
+  text-align: center;
+  font-size: 2rem;
+  margin-bottom: 2rem;
+}
+
+.search-form {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+  
+  .input-wrapper {
+    position: relative;
+    flex: 1;
+    max-width: 600px;
+    
+    .search-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #666;
+    }
+  }
+
+  input {
+    width: 100%;
+    padding: 0.75rem 1rem 0.75rem 2.5rem;
+    font-size: 1rem;
+    border: 2px solid var(--color-input-border);
+    border-radius: 4px;
+    outline: none;
+    
+    &:focus {
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 3px rgba(247, 165, 23, 0.25);
+    }
+    
+    &:disabled {
+      background: #f5f5f5;
+      cursor: not-allowed;
+    }
+  }
+
+  button {
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    background: var(--color-primary);
+    border: none;
+    border-radius: 4px;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    
+    &:hover:not(:disabled) {
+      background: darken(#f7a517, 10%);
+    }
+    
+    &:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+    
+    &.loading {
+      position: relative;
+      color: transparent;
+      
+      &::after {
+        content: '';
+        position: absolute;
+        width: 16px;
+        height: 16px;
+        top: 50%;
+        left: 50%;
+        margin: -8px 0 0 -8px;
+        border: 2px solid rgba(255,255,255,0.3);
+        border-radius: 50%;
+        border-top-color: white;
+        animation: spin 0.8s infinite linear;
+      }
+    }
+  }
+}
+
+.chat-bubble {
+  background: var(--color-bubble);
+  border-radius: 15px;
+  padding: 15px;
+  margin: 10px auto;
+  max-width: 800px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  position: relative;
+  
+  .delete-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 20px;
+    height: 20px;
+    border: none;
+    background: none;
+    opacity: 0.6;
+    cursor: pointer;
+    padding: 0;
+    
+    &::before,
+    &::after {
+      content: '';
+      position: absolute;
+      width: 2px;
+      height: 16px;
+      background: #666;
+      top: 50%;
+      left: 50%;
+    }
+    
+    &::before {
+      transform: translate(-50%, -50%) rotate(45deg);
+    }
+    
+    &::after {
+      transform: translate(-50%, -50%) rotate(-45deg);
+    }
+    
+    &:hover {
+      opacity: 1;
+    }
+  }
+
+  .wiki-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--color-primary);
+    text-decoration: none;
+    font-size: 0.875rem;
+    margin-top: 1rem;
+    
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}

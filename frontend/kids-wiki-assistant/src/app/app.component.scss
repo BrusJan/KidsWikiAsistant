@@ -1,0 +1,18 @@
+#hero {
+  background-image: url('/assets/bg.jpg');
+  background-repeat: repeat-x;
+  background-position: center;
+  background-size: auto 100%;
+
+  .hero-image {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    
+    img {
+      max-height: 200px;
+      width: auto;
+      object-fit: contain;
+    }
+  }
+}

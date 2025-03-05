@@ -1,0 +1,17 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "An Express application for fetching Wikipedia articles and communicating with the Mistral LLM API.",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "axios": "^0.21.1",
+    "dotenv": "^16.4.7",
+    "express": "^4.17.1"
+  },
+  "author": "",
+  "license": "ISC"
+}
