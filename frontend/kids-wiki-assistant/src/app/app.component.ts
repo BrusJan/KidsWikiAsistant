@@ -83,11 +83,22 @@ export class AppComponent implements OnInit {
   }
 
   submitReport() {
-    console.log('Reported issue:', {
+    const response = this.responses.find(r => r.id === this.selectedResponseId);
+    if (!response) return;
+
+    this.http.post('http://localhost:3000/api/main/report', {
       responseId: this.selectedResponseId,
+      query: response.query,
       text: this.reportText
+    }).subscribe({
+      next: () => {
+        console.log('Report submitted successfully');
+        this.closeReportPopup();
+      },
+      error: (error) => {
+        console.error('Error submitting report:', error);
+      }
     });
-    this.closeReportPopup();
   }
 
   private saveToLocalStorage() {
