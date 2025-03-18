@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { trigger, transition, style, animate } from '@angular/animations';
+import { timeout } from 'rxjs/operators';
 
 @Component({
   selector: 'app-root',
@@ -10,7 +11,7 @@ import { trigger, transition, style, animate } from '@angular/animations';
   styleUrls: ['./app.component.scss'],
   standalone: true,
   imports: [
-    CommonModule, 
+    CommonModule,
     FormsModule
   ],
   animations: [
@@ -31,7 +32,7 @@ export class AppComponent implements OnInit {
   selectedResponseId?: number;
   reportText = '';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   ngOnInit() {
     const saved = localStorage.getItem('wikiResponses');
@@ -42,9 +43,9 @@ export class AppComponent implements OnInit {
 
   search() {
     if (!this.searchQuery.trim() || this.isLoading) return;
-    
-    this.isLoading = true;
-    this.http.get(`http://localhost:3000/api/main/kids-summary?query=${encodeURIComponent(this.searchQuery)}`)
+
+    this.http.get(`https://kidswikiasistant.onrender.com/api/main/kids-summary?query=${encodeURIComponent(this.searchQuery)}`)
+      .pipe(timeout(30000)) // 30 second timeout
       .subscribe({
         next: (response: any) => {
           this.responses.unshift({
@@ -61,6 +62,8 @@ export class AppComponent implements OnInit {
           console.error('Error:', error);
           this.isLoading = false;
           this.searchInput.nativeElement.focus();
+          // Show user-friendly error message
+          alert('Služba je momentálně nedostupná. Zkuste to prosím později.');
         }
       });
   }
@@ -86,7 +89,7 @@ export class AppComponent implements OnInit {
     const response = this.responses.find(r => r.id === this.selectedResponseId);
     if (!response) return;
 
-    this.http.post('http://localhost:3000/api/main/report', {
+    this.http.post('https://kidswikiasistant.onrender.com/api/main/report', {
       responseId: this.selectedResponseId,
       query: response.query,
       text: this.reportText
