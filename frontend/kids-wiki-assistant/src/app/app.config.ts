@@ -2,15 +2,18 @@ import { ApplicationConfig, importProvidersFrom } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideHttpClient } from '@angular/common/http';
-import { initializeApp } from '@angular/fire/app';
-import { getAuth } from '@angular/fire/auth';
-import { provideFirebaseApp } from '@angular/fire/app';
-import { provideAuth } from '@angular/fire/auth';
+import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
+import { getAuth, provideAuth } from '@angular/fire/auth';
 import { FirebaseUIModule } from 'firebaseui-angular';
 import { routes } from './app.routes';
+import { AngularFireModule } from '@angular/fire/compat';
+import { AngularFireAuthModule } from '@angular/fire/compat/auth';
+import { AngularFireDatabaseModule } from '@angular/fire/compat/database';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 import * as firebaseui from 'firebaseui';
+import { NgxStripeModule } from 'ngx-stripe';
+import { environment } from '../environments/environment';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBrRtlI4rxKX6jr-5WbVeiPMhNk6GzxA9Y",
@@ -24,7 +27,6 @@ const firebaseConfig = {
 
 const firebaseUiAuthConfig: firebaseui.auth.Config = {
   signInOptions: [
-    firebase.auth.EmailAuthProvider.PROVIDER_ID,
     firebase.auth.GoogleAuthProvider.PROVIDER_ID,
   ],
   signInSuccessUrl: '/',
@@ -37,8 +39,12 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     provideAnimations(),
     provideHttpClient(),
-    provideFirebaseApp(() => initializeApp(firebaseConfig)),
-    provideAuth(() => getAuth()),
-    importProvidersFrom(FirebaseUIModule.forRoot(firebaseUiAuthConfig))
+    importProvidersFrom([
+      AngularFireModule.initializeApp(firebaseConfig),
+      AngularFireAuthModule,
+      AngularFireDatabaseModule,
+      FirebaseUIModule.forRoot(firebaseUiAuthConfig),
+      NgxStripeModule.forRoot('your_stripe_publishable_key') // Add your Stripe publishable key here
+    ])
   ]
 };

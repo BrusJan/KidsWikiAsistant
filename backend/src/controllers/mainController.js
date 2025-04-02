@@ -23,8 +23,35 @@ const getKidsFriendlySummary = async (req, res) => {
         console.log('Wiki Response:', wikiRes.data); // Debug log
 
         if (!wikiRes.data || !wikiRes.data.content) {
-            console.log('No wiki content found'); // Debug log
-            return res.status(404).json({ error: 'No article found' });
+            console.log('No wiki content found, falling back to Mistral AI'); // Debug log
+            
+            // Create direct prompt for Mistral when no wiki article found
+            const mistralReq = {
+                body: {
+                    prompt: `Napiš krátký odstavec tak aby to pochopilo šestileté dítě na toto téma: ${req.query.query}`
+                }
+            };
+            const mistralRes = {
+                json: function(data) {
+                    this.data = data;
+                    return data;
+                },
+                status: function(code) {
+                    this.statusCode = code;
+                    return this;
+                },
+                data: null,
+                statusCode: 200
+            };
+
+            await mistralController.getMistralResponse(mistralReq, mistralRes);
+            
+            return res.json({
+                originalTitle: req.query.query,
+                kidsFriendlySummary: "Nenašel jsem odpověď na wikipedii tak to zkusím sám: " + 
+                                   mistralRes.data.choices[0].message.content,
+                wikiUrl: ''
+            });
         }
 
         // Create prompt for Mistral

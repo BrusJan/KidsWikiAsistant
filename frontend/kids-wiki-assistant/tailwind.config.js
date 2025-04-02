@@ -9,7 +9,7 @@ module.exports = {
         sans: ['Quicksand', 'system-ui', 'sans-serif'],
       },
       colors: {
-        bubble: '#e8f4f8',
+        bubble: '#f1f7fa',
         primary: '#f7a517',
         background: '#f3d8bd',
         'input-border': '#d2d5c0',
