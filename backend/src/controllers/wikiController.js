@@ -1,6 +1,7 @@
 const axios = require('axios');
-const firebaseAdmin = require('../config/firebase');
+const admin = require('../config/firebase');
 const { AuthController } = require('../controllers/authController');
+const { FieldValue } = require('firebase-admin/firestore');
 
 const search = async (req, res) => {
   const { query, userId } = req.query;
@@ -14,8 +15,8 @@ const search = async (req, res) => {
       });
     }
 
-    // Get user document to check stripeCustomerId
-    const userRef = firebaseAdmin.firestore().collection('users').doc(userId);
+    const db = admin.firestore();
+    const userRef = db.collection('users').doc(userId);
     const userDoc = await userRef.get();
     
     if (!userDoc.exists) {
@@ -27,11 +28,8 @@ const search = async (req, res) => {
     }
 
     const userData = userDoc.data();
-    
-    // Check subscription status directly with Stripe
     const subscriptionStatus = await AuthController.checkSubscriptionStatus(userData.stripeCustomerId);
     
-    // If user is not premium, check API calls
     if (subscriptionStatus.subscription === 'free') {
       if ((userData.apiCallsUsed || 0) >= (userData.apiCallsLimit || 10)) {
         return res.status(403).json({
@@ -41,15 +39,15 @@ const search = async (req, res) => {
         });
       }
       
-      // Increment API calls for free users
+      // Use FieldValue.increment() for atomic updates
       await userRef.update({
-        apiCallsUsed: firebaseAdmin.firestore.FieldValue.increment(1),
-        totalSearchQueries: firebaseAdmin.firestore.FieldValue.increment(1)
+        apiCallsUsed: FieldValue.increment(1),
+        totalSearchQueries: FieldValue.increment(1)
       });
     } else {
       // For premium users, just increment total queries
       await userRef.update({
-        totalSearchQueries: firebaseAdmin.firestore.FieldValue.increment(1)
+        totalSearchQueries: FieldValue.increment(1)
       });
     }
 
@@ -124,10 +122,10 @@ const search = async (req, res) => {
     }
 
   } catch (error) {
-    console.error('Error in Wikipedia search:', error);
-    res.status(500).json({
-      title: 'Chyba služby',
-      content: 'Služba je momentálně nedostupná. Zkus to prosím později.',
+    console.error('Search error:', error);
+    return res.status(500).json({
+      title: 'Chyba vyhledávání',
+      content: 'Nepodařilo se najít požadované informace.',
       url: ''
     });
   }
