@@ -1,6 +1,6 @@
 const axios = require('axios');
 const firebaseAdmin = require('../config/firebase');
-const authRoutes = require('../routes/authRoutes');
+const { checkStripeSubscriptionStatus } = require('../routes/authRoutes');
 
 const search = async (req, res) => {
   const { query, userId } = req.query;
@@ -28,7 +28,7 @@ const search = async (req, res) => {
 
     const userData = userDoc.data();
     
-    const subscriptionStatus = await authRoutes.checkStripeSubscriptionStatus(userData.stripeCustomerId);
+    const subscriptionStatus = await checkStripeSubscriptionStatus(userData.stripeCustomerId);
     
     // If user is not premium, check API calls
     if (subscriptionStatus.subscription !== 'premium') {
