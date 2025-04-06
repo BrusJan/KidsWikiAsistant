@@ -4,7 +4,19 @@ const mistralController = require('./mistralController');
 const getKidsFriendlySummary = async (req, res) => {
     try {
         // Create mock request/response for wikiController
-        const wikiReq = { query: { query: req.query.query } };
+        const wikiReq = { 
+          query: { 
+            query: req.query.query,
+            userId: req.query.userId // Make sure userId is passed
+          }
+        };
+        
+        // Add debug logging
+        console.log('Received request with:', {
+          query: req.query.query,
+          userId: req.query.userId
+        });
+
         const wikiRes = {
             json: function(data) {
                 this.data = data;

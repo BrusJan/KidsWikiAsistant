@@ -14,18 +14,18 @@ import { environment } from '../../environments/environment';
       <div class="max-w-md w-full space-y-8">
         <div>
           <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Platba byla úspěšná!
+            {{ error ? 'Chyba!' : 'Platba byla úspěšná!' }}
           </h2>
-          <p class="mt-2 text-center text-sm text-gray-600">
-            Vaše předplatné bylo úspěšně aktivováno.
+          <p class="mt-2 text-center text-sm" [class.text-red-600]="error" [class.text-gray-600]="!error">
+            {{ error || 'Vaše předplatné bylo úspěšně aktivováno.' }}
           </p>
         </div>
 
         <div class="flex justify-center">
           <button
-            (click)="navigateToProfile()"
+            (click)="navigateToHome()"
             class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
-            Zpět na profil
+            Zpět na hlavní stránku
           </button>
         </div>
       </div>
@@ -33,6 +33,8 @@ import { environment } from '../../environments/environment';
   `
 })
 export class SuccessComponent implements OnInit {
+  error: string | null = null;
+
   constructor(
     private router: Router,
     private auth: AngularFireAuth,
@@ -43,10 +45,15 @@ export class SuccessComponent implements OnInit {
     this.verifyPayment();
   }
 
+  private handleError(message: string) {
+    this.error = message;
+    console.error('Payment error:', message);
+  }
+
   private async verifyPayment() {
     const sessionId = new URLSearchParams(window.location.search).get('session_id');
     if (!sessionId) {
-      this.router.navigate(['/profile']);
+      this.handleError('Chybí ID platební session');
       return;
     }
 
@@ -57,18 +64,23 @@ export class SuccessComponent implements OnInit {
         return;
       }
 
-      await this.http.post(`${environment.apiUrl}/api/subscription/verify-session`, {
+      const response: any = await this.http.post(`${environment.apiUrl}/api/subscription/verify-session`, {
         sessionId,
         userId: user.uid
       }).toPromise();
 
-    } catch (error) {
+      if (response.status === 'success') {
+        this.router.navigate(['/']);
+      } else {
+        this.handleError('Platba nebyla dokončena');
+      }
+    } catch (error: any) {
+      this.handleError(error.message || 'Nastala chyba při ověřování platby');
       console.error('Error verifying payment:', error);
-      this.router.navigate(['/profile']);
     }
   }
 
-  navigateToProfile() {
-    this.router.navigate(['/profile']);
+  navigateToHome() {
+    this.router.navigate(['/']);
   }
 }

@@ -7,12 +7,12 @@
       </div>
       <div class="flex items-center gap-4">
         <!-- Show user email when logged in -->
-        <span *ngIf="auth.user | async as user" class="text-gray-600">
+        <span *ngIf="user$ | async as user" class="text-gray-600">
           {{ user.email }}
         </span>
 
         <!-- Profile and Logout buttons -->
-        <ng-container *ngIf="auth.user | async; else loginBtn">
+        <ng-container *ngIf="user$ | async; else loginBtn">
           <button (click)="navigateToProfile()"
             class="px-4 py-2 text-sm font-medium text-white bg-primary rounded-md hover:bg-primary/90 transition-colors">
             Profil
@@ -45,8 +45,8 @@
       Vikitorek
     </h1>
 
-    <div class="w-full max-w-3xl mx-auto">
-      <div *ngIf="!(auth.user | async)" class="text-center mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+    <div class="w-full max-w-lg mx-auto">
+      <div *ngIf="!(user$ | async)" class="text-center mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
         <p class="text-sm text-yellow-700">Pro vyhledávání se prosím <button (click)="login()"
             class="text-primary hover:text-primary/90 underline">přihlaste</button></p>
       </div>
@@ -56,7 +56,7 @@
     <div class="flex justify-center gap-2 mb-4 flex-wrap items-center">
       <p class="text-sm text-gray-600">Vyzkoušejte:</p>
       <button *ngFor="let example of searchExamples" (click)="searchExample(example)"
-        [disabled]="isLoading || !(auth.user | async)"
+        [disabled]="isLoading || !(user$ | async)"
         class="px-4 py-2 text-sm bg-bubble hover:bg-bubble/70 rounded-full transition-colors shadow-sm hover:shadow text-gray-600 hover:text-gray-800 focus:outline-none focus:ring-2 focus:ring-primary/25 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-bubble disabled:hover:shadow-none">
         {{ example }}
       </button>
@@ -64,28 +64,28 @@
 
     <form class="flex justify-center mb-8" (submit)="$event.preventDefault(); search()"
       [ngClass]="{'opacity-70': isLoading}">
-      <div class="relative flex-1 max-w-2xl">
+      <div class="relative flex-1 max-w-lg">
         <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-600"></i>
         <input #searchInput type="text" name="searchQuery" placeholder="Zadej klíčové slovo?" [(ngModel)]="searchQuery"
-          [ngModelOptions]="{standalone: true}" (keyup.enter)="search()" [disabled]="isLoading || !(auth.user | async)"
+          [ngModelOptions]="{standalone: true}" (keyup.enter)="search()" [disabled]="isLoading || !(user$ | async)"
           class="w-full h-12 pl-12 pr-14 text-base border-2 border-input-border rounded-lg outline-none focus:border-primary focus:ring-2 focus:ring-primary/25 disabled:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-70">
 
-        <button type="submit" [disabled]="isLoading || !searchQuery.trim() || !(auth.user | async)"
+        <button type="submit" [disabled]="isLoading || !searchQuery.trim() || !(user$ | async)"
           class="absolute right-1 top-1 h-10 w-10 bg-primary text-white rounded-md flex items-center justify-center hover:bg-primary/90 disabled:opacity-70 disabled:cursor-not-allowed shadow-lg hover:shadow-xl">
           <i class="fas fa-search text-lg"></i>
         </button>
       </div>
     </form>
 
-    <h2>queriesRemaining &lt; FREE_QUERIES_LIMIT{{queriesRemaining < FREE_QUERIES_LIMIT}}</h2>
-    <div *ngIf="queriesRemaining < FREE_QUERIES_LIMIT && (auth.user | async)" class="text-sm text-gray-600 mt-2">
-      Zbývá vám {{queriesRemaining}} {{queriesRemaining === 1 ? 'dotaz' :
-      (queriesRemaining > 1 && queriesRemaining < 5 ? 'dotazy' : 'dotazů' )}} z 10 zdarma. <a routerLink="/login"
-        class="text-primary hover:text-primary/90">Přihlaste se</a> pro neomezené dotazy.
-    </div>
-
     <div *ngIf="isLoading" class="flex justify-center mb-8" @fadeIn>
       <div class="w-16 h-16 border-4 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+    </div>
+
+    <!-- Add limit exceeded warning -->
+    <div *ngIf="showLimitExceededWarning" class="max-w-3xl mx-auto mb-8 p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-center" @fadeIn>
+      <p class="text-yellow-800">Dosáhli jste maximálního počtu dotazů. Pro pokračování si prosím 
+        <a routerLink="/profile" class="text-primary cursor-pointer hover:text-primary/90 underline">aktivujte předplatné</a>.
+      </p>
     </div>
 
     <div class="space-y-4">

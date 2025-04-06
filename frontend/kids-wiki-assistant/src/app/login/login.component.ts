@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { FirebaseUIModule } from 'firebaseui-angular';
 import { Router } from '@angular/router';
-import { AngularFireAuth } from '@angular/fire/compat/auth';
+import { AuthService } from '../services/auth.service';
 
 @Component({
   selector: 'app-login',
@@ -16,12 +16,6 @@ import { AngularFireAuth } from '@angular/fire/compat/auth';
           <h2 class="text-3xl font-extrabold text-gray-900">
             {{ isRegistering ? 'Registrace' : 'Přihlášení do aplikace' }}
           </h2>
-          <button 
-            *ngIf="auth.user | async"
-            (click)="logout()" 
-            class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors">
-            Odhlásit se
-          </button>
         </div>
 
         <!-- Custom Email/Password Form -->
@@ -89,7 +83,7 @@ import { AngularFireAuth } from '@angular/fire/compat/auth';
           </div>
         </form>
 
-        <div class="relative my-4">
+        <div class="relative my-4" *ngIf="!(user$ | async)">
           <div class="absolute inset-0 flex items-center">
             <div class="w-full border-t border-gray-300"></div>
           </div>
@@ -106,6 +100,7 @@ import { AngularFireAuth } from '@angular/fire/compat/auth';
   `,
 })
 export class LoginComponent {
+  user$ = this.authService.getUser$();
   email = '';
   password = '';
   error = '';
@@ -116,18 +111,12 @@ export class LoginComponent {
 
   constructor(
     private router: Router,
-    public auth: AngularFireAuth
+    private authService: AuthService
   ) {}
 
   async emailLogin() {
     try {
-      const result = await this.auth.signInWithEmailAndPassword(
-        this.email,
-        this.password
-      );
-      if (result.user) {
-        this.router.navigate(['/']);
-      }
+      await this.authService.loginUser(this.email, this.password).toPromise();
     } catch (error: any) {
       this.error = 'Nesprávný email nebo heslo';
       console.error('Login error:', error);
@@ -136,38 +125,35 @@ export class LoginComponent {
 
   async register() {
     try {
-      const result = await this.auth.createUserWithEmailAndPassword(
-        this.email,
-        this.password
-      );
-      if (result.user) {
-        this.router.navigate(['/']);
-      }
+      await this.authService.registerUser(this.email, this.password).toPromise();
+      this.router.navigate(['/']);
     } catch (error: any) {
-      this.error = 'Registrace se nezdařila';
+      if (error.message === 'EMAIL_EXISTS') {
+        this.error = 'Tento email již existuje';
+      }
+      else if (error.message === 'INVALID_EMAIL') {
+        this.error = 'Neplatný email';
+      }
+      else if (error.message === 'WEAK_PASSWORD') {
+        this.error = 'Heslo musí mít alespoň 6 znaků';
+      }
+      else if (error.message === 'OPERATION_NOT_ALLOWED') {
+        this.error = 'Registrace je zakázána';
+      }
+      else if (error.message === 'TOO_MANY_ATTEMPTS_TRY_LATER') {
+        this.error = 'Příliš mnoho pokusů o registraci. Zkuste to později';
+      }
+      else this.error = 'Registrace se nezdařila';
       console.error('Registration error:', error);
     }
   }
 
   async logout() {
-    try {
-      await this.auth.signOut();
-      console.log('User signed out successfully');
-    } catch (error) {
-      console.error('Error signing out:', error);
-    }
+    this.authService.logout().subscribe();
   }
 
   toggleMode() {
     this.isRegistering = !this.isRegistering;
-  }
-
-  successCallback(event: any) {
-    this.router.navigate(['/']);
-  }
-
-  errorCallback(event: any) {
-    console.error('Auth Error:', event);
   }
 
   async resetPassword() {
@@ -182,7 +168,7 @@ export class LoginComponent {
     this.resetPasswordError = false;
 
     try {
-      await this.auth.sendPasswordResetEmail(this.email);
+      await this.authService.requestPasswordReset(this.email);
       this.resetPasswordMessage = 'Email pro reset hesla byl odeslán';
       this.resetPasswordError = false;
     } catch (error: any) {

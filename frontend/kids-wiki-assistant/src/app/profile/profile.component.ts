@@ -1,16 +1,20 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { animate, state, style, transition, trigger } from '@angular/animations';
+import { AuthService } from '../services/auth.service';
+import { Subject, BehaviorSubject } from 'rxjs';
+import { finalize, takeUntil } from 'rxjs/operators';
+import { StripeService } from '../services/stripe.service';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule],
   animations: [
     trigger('expandCollapse', [
       state('collapsed', style({ height: '0', overflow: 'hidden', opacity: 0 })),
@@ -127,22 +131,42 @@ import { animate, state, style, transition, trigger } from '@angular/animations'
                       {{ hasActiveSubscription ? 'Aktivní' : 'Neaktivní' }}
                     </p>
                     
-                    <!-- Subscribe Button -->
+                    <!-- Add subscription end date info -->
+                    <p *ngIf="subscriptionEndsAt && cancelAtPeriodEnd" class="text-sm text-amber-600 mt-1">
+                      Předplatné je aktivní do {{ subscriptionEndsAt | date:'d.M.yyyy' }}
+                    </p>
+
+                    <!-- API Calls Info for Free Users -->
+                    <div *ngIf="!hasActiveSubscription" class="mt-2">
+                      <div class="text-sm text-gray-600">
+                        <span>Použité dotazy zdarma: {{ apiCallsUsed }}/{{ apiCallsLimit }}</span>
+                        <div class="w-full bg-gray-200 rounded-full h-2.5 mt-1">
+                          <div class="bg-primary h-2.5 rounded-full" 
+                               [style.width]="(apiCallsUsed / apiCallsLimit * 100) + '%'">
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <!-- Subscribe/Reactivate Button -->
                     <button
-                      *ngIf="!hasActiveSubscription"
+                      *ngIf="!hasActiveSubscription || (hasActiveSubscription && cancelAtPeriodEnd)"
                       (click)="startSubscription()"
                       [disabled]="isLoading"
                       class="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed">
-                      <span *ngIf="!isLoading">Aktivovat předplatné</span>
+                      <span *ngIf="!isLoading">
+                        {{ hasActiveSubscription && cancelAtPeriodEnd ? 'Znovu aktivovat předplatné' : 'Aktivovat předplatné' }}
+                      </span>
                       <span *ngIf="isLoading">Načítání...</span>
                     </button>
 
                     <!-- Cancel Subscription -->
                     <button
-                      *ngIf="hasActiveSubscription"
+                      *ngIf="hasActiveSubscription && !cancelAtPeriodEnd"
                       (click)="cancelSubscription()"
-                      class="mt-4 inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
-                      Zrušit předplatné
+                      [disabled]="isLoading"
+                      class="mt-4 inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed">
+                      {{ isLoading ? 'Rušení předplatného...' : 'Zrušit předplatné' }}
                     </button>
                   </ng-container>
                 </div>
@@ -158,21 +182,52 @@ import { animate, state, style, transition, trigger } from '@angular/animations'
         </div>
       </div>
     </div>
+
+    <!-- Confirmation Modal -->
+    <div *ngIf="showConfirmation$ | async"
+         class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center p-4 z-50">
+      <div class="bg-white rounded-lg p-6 max-w-sm w-full">
+        <h3 class="text-lg font-medium text-gray-900 mb-4">
+          Zrušit předplatné?
+        </h3>
+        <p class="text-sm text-gray-500 mb-4">
+          Opravdu chcete zrušit předplatné? Vaše předplatné zůstane aktivní do konce aktuálního období.
+        </p>
+        <div class="flex justify-end space-x-4">
+          <button
+            (click)="cancelConfirmation()"
+            class="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary rounded-md">
+            Zpět
+          </button>
+          <button
+            (click)="confirmCancel()"
+            class="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 rounded-md">
+            Zrušit předplatné
+          </button>
+        </div>
+      </div>
+    </div>
   `
 })
-export class ProfileComponent implements OnInit {
-  user$ = this.auth.user;
+export class ProfileComponent implements OnInit, OnDestroy {
+  private destroy$ = new Subject<void>();
+  user$ = this.authService.getUser$();
   hasActiveSubscription = false;
-  isLoading = true;  // Add new flag for status check
+  isLoading = true;
   passwordForm: FormGroup;
   isChangingPassword = false;
   passwordMessage = '';
   passwordError = false;
   isPasswordExpanded = false;
+  apiCallsUsed = 0;
+  apiCallsLimit = 10;
+  subscriptionEndsAt?: Date;
+  cancelAtPeriodEnd = false;
+  showConfirmation$ = new BehaviorSubject<boolean>(false);
 
   constructor(
-    private auth: AngularFireAuth,
-    private http: HttpClient,
+    private authService: AuthService,
+    private stripeService: StripeService,
     private router: Router,
     private fb: FormBuilder
   ) {
@@ -186,70 +241,73 @@ export class ProfileComponent implements OnInit {
     this.checkSubscriptionStatus();
   }
 
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
   private checkSubscriptionStatus() {
-    this.user$.subscribe(user => {
-      if (user) {
-        this.isLoading = true;  // Show loader while checking
-        // Add userId to query params
-        this.http.get(`${environment.apiUrl}/api/subscription/status?userId=${user.uid}`).subscribe({
-          next: (response: any) => {
-            this.hasActiveSubscription = response.active;
-            this.isLoading = false;
-          },
-          error: (error) => {
-            console.error('Error checking subscription:', error);
-            this.isLoading = false;
-          }
-        });
+    this.stripeService.loadSubscriptionStatus().pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
+      next: (status) => {
+        this.hasActiveSubscription = status.subscription === 'premium';
+        if (status.currentPeriodEnd) {
+          this.subscriptionEndsAt = new Date(status.currentPeriodEnd);
+        }
+        this.cancelAtPeriodEnd = status.cancelAtPeriodEnd; // This sets the flag
+        if (!this.hasActiveSubscription) {
+          this.apiCallsUsed = status.apiCallsUsed || 0;
+          this.apiCallsLimit = status.apiCallsLimit || 10;
+        }
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error('Error loading subscription:', error);
+        this.isLoading = false;
       }
     });
   }
 
   async startSubscription() {
     this.isLoading = true;
-    const user = await this.auth.currentUser;
-    
-    if (!user) {
-      this.isLoading = false;
-      return;
-    }
-
-    try {
-      const response: any = await this.http.post(`${environment.apiUrl}/api/subscription/create-session`, {
-        userId: user.uid,
-        email: user.email
-      }).toPromise();
-
-      // Redirect to Stripe Checkout
-      window.location.href = response.url;
-    } catch (error) {
-      console.error('Error creating subscription:', error);
-      this.isLoading = false;
-    }
+    this.stripeService.startSubscription().subscribe({
+      error: (error) => {
+        console.error('Error starting subscription:', error);
+        this.isLoading = false;
+      }
+    });
   }
 
   async cancelSubscription() {
-    const user = await this.auth.currentUser;
-    
-    if (!user) return;
+    this.showConfirmation$.next(true);
+  }
 
-    try {
-      const response = await this.http.post(`${environment.apiUrl}/api/subscription/cancel`, {
-        userId: user.uid
-      }).toPromise();
+  cancelConfirmation() {
+    this.showConfirmation$.next(false);
+  }
 
-      if (response && 'success' in response) {
-        this.hasActiveSubscription = false;
-        // Optionally show success message
-      }
-    } catch (error: any) {
-      console.error('Error canceling subscription:', error);
-      // Show error to user
-      alert(error.error?.error || 'Failed to cancel subscription');
-    } finally {
-      // Refresh subscription status
-      this.checkSubscriptionStatus();
-    }
+  async confirmCancel() {
+    this.showConfirmation$.next(false);
+    if (this.isLoading) return;
+    this.isLoading = true;
+
+    this.stripeService.cancelSubscription()
+      .pipe(
+        finalize(() => {
+          this.isLoading = false;
+        })
+      )
+      .subscribe({
+        next: () => {
+          this.hasActiveSubscription = false;
+          this.checkSubscriptionStatus();
+        },
+        error: (error) => {
+          console.error('Error canceling subscription:', error);
+          alert('Nepodařilo se zrušit předplatné');
+        }
+      });
   }
 
   async changePassword() {
@@ -259,27 +317,26 @@ export class ProfileComponent implements OnInit {
     this.passwordMessage = '';
     this.passwordError = false;
 
-    try {
-      const user = await this.auth.currentUser;
-      if (!user || !user.email) throw new Error('No user logged in');
+    const currentPassword = this.passwordForm.get('currentPassword')?.value;
+    const newPassword = this.passwordForm.get('newPassword')?.value;
 
-      // Reauthenticate user
-      const credential = await this.auth.signInWithEmailAndPassword(
-        user.email,
-        this.passwordForm.get('currentPassword')?.value
-      );
-
-      // Update password
-      await user.updatePassword(this.passwordForm.get('newPassword')?.value);
-      
-      this.passwordMessage = 'Heslo bylo úspěšně změněno';
-      this.passwordForm.reset();
-    } catch (error: any) {
-      this.passwordError = true;
-      this.passwordMessage = 'Chyba při změně hesla: ' + (error.message || 'Neznámá chyba');
-    } finally {
-      this.isChangingPassword = false;
-    }
+    this.authService.changePassword(currentPassword, newPassword)
+      .subscribe({
+        next: (result) => {
+          this.passwordMessage = result.message;
+          this.passwordError = !result.success;
+          if (result.success) {
+            this.passwordForm.reset();
+          }
+        },
+        error: (error) => {
+          this.passwordError = true;
+          this.passwordMessage = error.message;
+        },
+        complete: () => {
+          this.isChangingPassword = false;
+        }
+      });
   }
 
   navigateToHome() {

@@ -2,8 +2,6 @@ import { ApplicationConfig, importProvidersFrom } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideHttpClient } from '@angular/common/http';
-import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
-import { getAuth, provideAuth } from '@angular/fire/auth';
 import { FirebaseUIModule } from 'firebaseui-angular';
 import { routes } from './app.routes';
 import { AngularFireModule } from '@angular/fire/compat';
@@ -13,7 +11,6 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 import * as firebaseui from 'firebaseui';
 import { NgxStripeModule } from 'ngx-stripe';
-import { environment } from '../environments/environment';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBrRtlI4rxKX6jr-5WbVeiPMhNk6GzxA9Y",

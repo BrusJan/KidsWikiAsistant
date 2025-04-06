@@ -2,13 +2,17 @@ import { Component, OnInit, ViewChild, ElementRef, NgZone } from '@angular/core'
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { trigger, transition, style, animate } from '@angular/animations';
-import { timeout } from 'rxjs/operators';
-import { AngularFireAuth } from '@angular/fire/compat/auth';
+import { take, timeout } from 'rxjs/operators';
 import { environment } from '../environments/environment';
 import { AngularFireDatabase } from '@angular/fire/compat/database';
 import { firstValueFrom } from 'rxjs';
+import { AuthService } from './services/auth.service';
+
+interface StoredResponses {
+  [userId: string]: any[];
+}
 
 @Component({
     selector: 'app-home',
@@ -17,7 +21,8 @@ import { firstValueFrom } from 'rxjs';
     styleUrls: ['./home.component.scss'],
     imports: [
         CommonModule,
-        FormsModule
+        FormsModule,
+        RouterModule
     ],
     animations: [
         trigger('fadeIn', [
@@ -30,6 +35,7 @@ import { firstValueFrom } from 'rxjs';
 })
 export class HomeComponent implements OnInit {
   @ViewChild('searchInput') searchInput!: ElementRef;
+  user$ = this.authService.user$;
   searchQuery: string = '';
   responses: any[] = [];
   isLoading = false;
@@ -50,11 +56,12 @@ export class HomeComponent implements OnInit {
   queriesRemaining: number = this.FREE_QUERIES_LIMIT;
   private queriesRef: any;
   private anonymousId: string | null = null;
+  showLimitExceededWarning = false;
 
   constructor(
     private http: HttpClient,
     private router: Router,
-    public auth: AngularFireAuth,
+    private authService: AuthService,
     private db: AngularFireDatabase,
     private ngZone: NgZone
   ) {
@@ -64,13 +71,23 @@ export class HomeComponent implements OnInit {
   }
 
   ngOnInit() {
-    const saved = localStorage.getItem('wikiResponses');
-    if (saved) {
-      this.responses = JSON.parse(saved);
-    }
+    // Subscribe to user changes to load appropriate responses
+    this.user$.subscribe(user => {
+      if (user) {
+        const saved = localStorage.getItem('wikiResponses');
+        if (saved) {
+          const allResponses: StoredResponses = JSON.parse(saved);
+          // Get responses for current user or initialize empty array
+          this.responses = allResponses[user.uid] || [];
+        }
+      } else {
+        // Do not clear responses when user logs out
+        this.responses = [];  // Just clear the component state
+      }
+    });
 
     // Check queries count for anonymous users
-    this.auth.user.subscribe(user => {
+    this.authService.user$.subscribe(user => {
       if (!user || user.isAnonymous) {
         this.checkQueriesRemaining();
       }
@@ -110,41 +127,54 @@ export class HomeComponent implements OnInit {
 
   async search() {
     if (!this.searchQuery.trim() || this.isLoading) return;
+    this.performSearch();
+  }
 
-    const user = await firstValueFrom(this.auth.user);
+  private async performSearch() {
+    this.isLoading = true;
+    this.showLimitExceededWarning = false; // Reset warning
     
-    // Check if user is anonymous and has queries remaining
-    if (!user || user.isAnonymous) {
-      if (this.queriesRemaining <= 0) {
-        alert('Dosáhli jste limitu dotazů. Pro pokračování se prosím přihlaste.');
-        this.router.navigate(['/login']);
-        return;
-      }
-      await this.incrementQueryCount();
+    const user = await firstValueFrom(this.authService.user$);
+    if (!user) {
+      alert('Pro tuto akci musíte být přihlášen.');
+      this.router.navigate(['/login']);
+      return;
     }
     
-    this.isLoading = true; // Set loading state before making request
+    // Add debug logging
+    console.log('Searching with userId:', user.uid);
     
-    this.http.get(`${environment.apiUrl}/api/main/kids-summary?query=${encodeURIComponent(this.searchQuery)}`)
-      .pipe(timeout(30000)) // 30 second timeout
+    this.http.get(`${environment.apiUrl}/api/main/kids-summary`, {
+      params: {
+        query: this.searchQuery,
+        userId: user.uid
+      }
+    })
+      .pipe(timeout(30000))
       .subscribe({
         next: (response: any) => {
-          this.responses.unshift({
-            id: Date.now(),
-            query: this.searchQuery,
-            ...response
-          });
-          this.saveToLocalStorage();
+          if (response.originalTitle === 'Limit vyčerpán') {
+            this.showLimitExceededWarning = true;
+          } else {
+            this.responses.unshift({
+              id: Date.now(),
+              query: this.searchQuery,
+              ...response
+            });
+            this.saveToLocalStorage();
+          }
           this.searchQuery = '';
-          this.isLoading = false; // Reset loading state on success
+          this.isLoading = false;
           this.searchInput.nativeElement.focus();
         },
         error: (error) => {
-          console.error('Error:', error);
-          this.isLoading = false; // Reset loading state on error
-          this.searchInput.nativeElement.focus();
-          // Show user-friendly error message
-          alert('Služba je momentálně nedostupná. Zkuste to prosím později.');
+          console.error('Search error:', error);
+          this.isLoading = false;
+          if (error.status === 401) {
+            this.router.navigate(['/login']);
+          } else {
+            alert('Služba je momentálně nedostupná. Zkuste to prosím později.');
+          }
         }
       });
   }
@@ -194,13 +224,8 @@ export class HomeComponent implements OnInit {
     this.router.navigate(['/login']);
   }
 
-  async logout() {
-    try {
-        await this.auth.signOut();
-        console.log('User signed out successfully');
-    } catch (error) {
-        console.error('Error signing out:', error);
-    }
+  logout() {
+    this.authService.logout().subscribe();
   }
 
   navigateToProfile() {
@@ -208,6 +233,17 @@ export class HomeComponent implements OnInit {
   }
 
   private saveToLocalStorage() {
-    localStorage.setItem('wikiResponses', JSON.stringify(this.responses));
+    // Get current Firebase user
+    this.user$.pipe(take(1)).subscribe(user => {
+      if (!user) return;
+
+      const saved = localStorage.getItem('wikiResponses');
+      const allResponses: StoredResponses = saved ? JSON.parse(saved) : {};
+      
+      // Save responses using Firebase uid
+      allResponses[user.uid] = this.responses;
+      
+      localStorage.setItem('wikiResponses', JSON.stringify(allResponses));
+    });
   }
 }

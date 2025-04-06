@@ -5,7 +5,7 @@ const cors = require('cors');
 const wikiRoutes = require('./routes/wikiRoutes');
 const mistralRoutes = require('./routes/mistralRoutes');
 const mainRoutes = require('./routes/mainRoutes');
-const stripeRoutes = require('./routes/stripeRoutes');
+const authRoutes = require('./routes/authRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -19,6 +19,7 @@ app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  console.log(`${req.method} ${req.path}`, req.params);
   next();
 });
 
@@ -26,7 +27,7 @@ app.use((req, res, next) => {
 app.use('/api/wiki', wikiRoutes);
 app.use('/api/mistral', mistralRoutes);
 app.use('/api/main', mainRoutes);
-app.use('/api/subscription', stripeRoutes);
+app.use('/api/auth', authRoutes); // Changed from /api/subscription to /api/auth
 
 // Error handling middleware
 app.use((err, req, res, next) => {
