@@ -16,9 +16,10 @@ router.post('/create-user', async (req, res) => {
       createdAt: new Date().toISOString(),
       subscriptionStatus: 'free',
       apiCallsUsed: 0,
-      apiCallsLimit: 10
+      apiCallsLimit: 10,
+      totalSearchQueries: 0  // Initialize counter
     }
-
+    
     await firebaseAdmin.firestore().collection('users').doc(userId).set(newUser);
     return res.json({ userId });
 

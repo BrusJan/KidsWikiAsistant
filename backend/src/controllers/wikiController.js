@@ -14,7 +14,9 @@ const search = async (req, res) => {
     }
 
     // Check user's subscription status
-    const userDoc = await firebaseAdmin.firestore().collection('users').doc(userId).get();
+    const userRef = firebaseAdmin.firestore().collection('users').doc(userId);
+    const userDoc = await userRef.get();
+    
     if (!userDoc.exists) {
       return res.status(404).json({
         title: 'Chyba přístupu',
@@ -27,7 +29,7 @@ const search = async (req, res) => {
     
     // If user is not premium, check API calls
     if (userData.subscriptionStatus !== 'premium') {
-      if (userData.apiCallsUsed >= userData.apiCallsLimit) {
+      if ((userData.apiCallsUsed || 0) >= (userData.apiCallsLimit || 10)) {
         return res.status(403).json({
           title: 'Limit vyčerpán',
           content: 'Dosáhli jste maximálního počtu dotazů. Pro pokračování si prosím aktivujte předplatné.',
@@ -35,12 +37,18 @@ const search = async (req, res) => {
         });
       }
       
-      // Increment API calls counter
-      await firebaseAdmin.firestore().collection('users').doc(userId).update({
-        apiCallsUsed: (userData.apiCallsUsed || 0) + 1
+      // Initialize fields if they don't exist and increment
+      await userRef.set({
+        apiCallsUsed: (userData.apiCallsUsed || 0) + 1,
+        totalSearchQueries: (userData.totalSearchQueries || 0) + 1
+      }, { merge: true });
+    } else {
+      // For premium users, just increment total queries
+      await userRef.update({
+        totalSearchQueries: firebaseAdmin.firestore.FieldValue.increment(1)
       });
     }
-    
+
     if (!query || query.trim().length === 0) {
       return res.status(400).json({
         title: 'Chyba vyhledávání',
@@ -60,13 +68,6 @@ const search = async (req, res) => {
         language: 'cs'
       }
     });
-
-    // If search was successful, increment the total search counter
-    if (searchResponse.data && searchResponse.data.query) {
-      await firebaseAdmin.firestore().collection('users').doc(userId).update({
-        totalSearchQueries: firebaseAdmin.firestore.FieldValue.increment(1)
-      });
-    }
 
     if (!searchResponse.data.query.search.length) {
       return res.status(404).json({

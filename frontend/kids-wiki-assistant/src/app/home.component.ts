@@ -239,7 +239,6 @@ export class HomeComponent implements OnInit {
 
       const saved = localStorage.getItem('wikiResponses');
       const allResponses: StoredResponses = saved ? JSON.parse(saved) : {};
-      
       // Save responses using Firebase uid
       allResponses[user.uid] = this.responses;
       
