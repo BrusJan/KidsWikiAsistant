@@ -34,6 +34,7 @@ export class StripeService {
       filter((user): user is UserState => user !== null),
       // Now we're guaranteed to have a non-null user
       switchMap(user => {
+        console.log('user:', user);
         return this.http.get<SubscriptionStatus>(`${this.apiUrl}/status`, {
           params: { userId: user.uid }
         });

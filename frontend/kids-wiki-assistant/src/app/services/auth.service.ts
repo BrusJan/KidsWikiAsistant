@@ -45,26 +45,14 @@ export class AuthService implements OnDestroy {
     this.afAuth = afAuth;
     this.user$ = this.afAuth.user;  // Initialize after afAuth is set
     
-    // Initialize from localStorage if available
-    const savedUser = localStorage.getItem('user');
-    if (savedUser) {
-      this.userState.next(JSON.parse(savedUser));
-    }
-
-    // Only save to localStorage, never remove
-    this.userStateSubscription = this.userState$.subscribe(state => {
-      if (state) {
-        localStorage.setItem('user', JSON.stringify(state));
-      }
-      // Removed localStorage.removeItem
-    });
-
     // Subscribe to Firebase auth state changes
-    this.afAuth.authState.subscribe(user => {
+    this.userStateSubscription = this.afAuth.authState.subscribe(user => {
       if (user) {
         this.fetchUserData(user.uid);
       } else {
+        // Clear user state when logged out
         this.userState.next(null);
+        localStorage.removeItem('user'); // Clear local storage on logout
       }
     });
   }
@@ -125,11 +113,16 @@ export class AuthService implements OnDestroy {
    * Login user and fetch their data
    */
   loginUser(email: string, password: string): Observable<void> {
+    // Clear any existing state before login
+    this.userState.next(null);
+    localStorage.removeItem('user');
+
     return from(this.afAuth.signInWithEmailAndPassword(email, password)).pipe(
       tap(credential => {
         if (!credential.user) {
           throw new Error('Login failed');
         }
+        // Fetch fresh user data
         this.fetchUserData(credential.user.uid);
       }),
       tap(() => {
@@ -142,9 +135,10 @@ export class AuthService implements OnDestroy {
   logout(): Observable<void> {
     return from(this.afAuth.signOut()).pipe(
       tap(() => {
+        // Clear state immediately on logout
         this.userState.next(null);
+        localStorage.removeItem('user');
         this.router.navigate(['/login']);
-        // Removed localStorage clearing
       })
     );
   }

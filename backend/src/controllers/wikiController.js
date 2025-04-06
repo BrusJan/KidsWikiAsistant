@@ -1,6 +1,5 @@
 const axios = require('axios');
 const firebaseAdmin = require('../config/firebase');
-const { checkStripeSubscriptionStatus } = require('../routes/authRoutes');
 
 const search = async (req, res) => {
   const { query, userId } = req.query;
@@ -14,10 +13,8 @@ const search = async (req, res) => {
       });
     }
 
-    // Get user document to check stripeCustomerId
-    const userRef = firebaseAdmin.firestore().collection('users').doc(userId);
-    const userDoc = await userRef.get();
-    
+    // Check user's subscription status
+    const userDoc = await firebaseAdmin.firestore().collection('users').doc(userId).get();
     if (!userDoc.exists) {
       return res.status(404).json({
         title: 'Chyba přístupu',
@@ -28,11 +25,9 @@ const search = async (req, res) => {
 
     const userData = userDoc.data();
     
-    const subscriptionStatus = await checkStripeSubscriptionStatus(userData.stripeCustomerId);
-    
     // If user is not premium, check API calls
-    if (subscriptionStatus.subscription !== 'premium') {
-      if ((userData.apiCallsUsed || 0) >= (userData.apiCallsLimit || 10)) {
+    if (userData.subscriptionStatus !== 'premium') {
+      if (userData.apiCallsUsed >= userData.apiCallsLimit) {
         return res.status(403).json({
           title: 'Limit vyčerpán',
           content: 'Dosáhli jste maximálního počtu dotazů. Pro pokračování si prosím aktivujte předplatné.',
@@ -40,18 +35,12 @@ const search = async (req, res) => {
         });
       }
       
-      // Increment API calls for free users
-      await userRef.update({
-        apiCallsUsed: firebaseAdmin.firestore.FieldValue.increment(1),
-        totalSearchQueries: firebaseAdmin.firestore.FieldValue.increment(1)
-      });
-    } else {
-      // For premium users, just increment total queries
-      await userRef.update({
-        totalSearchQueries: firebaseAdmin.firestore.FieldValue.increment(1)
+      // Increment API calls counter
+      await firebaseAdmin.firestore().collection('users').doc(userId).update({
+        apiCallsUsed: (userData.apiCallsUsed || 0) + 1
       });
     }
-
+    
     if (!query || query.trim().length === 0) {
       return res.status(400).json({
         title: 'Chyba vyhledávání',
@@ -123,10 +112,10 @@ const search = async (req, res) => {
     }
 
   } catch (error) {
-    console.error('Search error:', error);
-    return res.status(500).json({
-      title: 'Chyba vyhledávání',
-      content: 'Nepodařilo se najít požadované informace.',
+    console.error('Error in Wikipedia search:', error);
+    res.status(500).json({
+      title: 'Chyba služby',
+      content: 'Služba je momentálně nedostupná. Zkus to prosím později.',
       url: ''
     });
   }

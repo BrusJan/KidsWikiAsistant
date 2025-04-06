@@ -1,4 +1,3 @@
-
 const stripe = require('../config/stripe');
 const firebaseAdmin = require('../config/firebase');
 
@@ -28,9 +27,13 @@ class AuthController {
     }
   }
 
-  async checkSubscriptionStatus(stripeCustomerId) {
+  // Make checkSubscriptionStatus static so it can be used without instance
+  static async checkSubscriptionStatus(stripeCustomerId) {
     if (!stripeCustomerId) {
-      return { subscription: 'free' };
+      return { 
+        subscription: 'free',
+        cancelAtPeriodEnd: false
+      };
     }
   
     try {
@@ -40,12 +43,25 @@ class AuthController {
         limit: 1
       });
   
-      return {
-        subscription: subscriptions.data.length > 0 ? 'premium' : 'free'
+      if (subscriptions.data.length > 0) {
+        const subscription = subscriptions.data[0];
+        return {
+          subscription: 'premium',
+          cancelAtPeriodEnd: subscription.cancel_at_period_end,
+          currentPeriodEnd: new Date(subscription.current_period_end * 1000).toISOString()
+        };
+      }
+  
+      return { 
+        subscription: 'free',
+        cancelAtPeriodEnd: false
       };
     } catch (error) {
       console.error('Error checking Stripe subscription:', error);
-      return { subscription: 'free' }; // Default to free on error
+      return { 
+        subscription: 'free',
+        cancelAtPeriodEnd: false
+      };
     }
   }
 
@@ -109,7 +125,8 @@ class AuthController {
       }
 
       const userData = userDoc.data();
-      const subscriptionStatus = await this.checkSubscriptionStatus(userData.stripeCustomerId);
+      // Use the static method instead of this
+      const subscriptionStatus = await AuthController.checkSubscriptionStatus(userData.stripeCustomerId);
 
       return res.json({
         ...subscriptionStatus,
@@ -197,7 +214,81 @@ class AuthController {
     }
   }
 
+  async getUserData(req, res) {
+    const { userId } = req.params;
+    
+    try {
+      const userDoc = await firebaseAdmin.firestore().collection('users').doc(userId).get();
+      
+      if (!userDoc.exists) {
+        console.log(`User ${userId} not found`);
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      const userData = userDoc.data();
+      const response = {
+        uid: userId,
+        email: userData.email,
+        apiCallsUsed: userData.apiCallsUsed || 0,
+        apiCallsLimit: userData.apiCallsLimit || 10,
+        totalSearchQueries: userData.totalSearchQueries || 0,
+        createdAt: userData.createdAt
+      };
+
+      return res.json(response);
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+      return res.status(500).json({
+        error: 'Failed to fetch user data',
+        details: error.message
+      });
+    }
+  }
+
   // Add other controller methods...
 }
 
-module.exports = new AuthController();
+// Add static method to the class
+AuthController.checkSubscriptionStatus = async (stripeCustomerId) => {
+  if (!stripeCustomerId) {
+    return { 
+      subscription: 'free',
+      cancelAtPeriodEnd: false
+    };
+  }
+
+  try {
+    const subscriptions = await stripe.subscriptions.list({
+      customer: stripeCustomerId,
+      status: 'active',
+      limit: 1
+    });
+
+    if (subscriptions.data.length > 0) {
+      const subscription = subscriptions.data[0];
+      return {
+        subscription: 'premium',
+        cancelAtPeriodEnd: subscription.cancel_at_period_end,
+        currentPeriodEnd: new Date(subscription.current_period_end * 1000).toISOString()
+      };
+    }
+
+    return { 
+      subscription: 'free',
+      cancelAtPeriodEnd: false
+    };
+  } catch (error) {
+    console.error('Error checking Stripe subscription:', error);
+    return { 
+      subscription: 'free',
+      cancelAtPeriodEnd: false
+    };
+  }
+};
+
+// Create instance and export both the instance and class
+const authController = new AuthController();
+module.exports = {
+  controller: authController,
+  AuthController // Export the class so static methods are accessible
+};
