@@ -6,6 +6,28 @@ const firebaseAdmin = require('../config/firebase');
 
 const SUBSCRIPTION_PRICE_ID = process.env.STRIPE_PRICE_ID;
 
+// Move the function outside of router definitions
+async function checkStripeSubscriptionStatus(stripeCustomerId) {
+  if (!stripeCustomerId) {
+    return { subscription: 'free' };
+  }
+
+  try {
+    const subscriptions = await stripe.subscriptions.list({
+      customer: stripeCustomerId,
+      status: 'active',
+      limit: 1
+    });
+
+    return {
+      subscription: subscriptions.data.length > 0 ? 'premium' : 'free'
+    };
+  } catch (error) {
+    console.error('Error checking Stripe subscription:', error);
+    return { subscription: 'free' }; // Default to free on error
+  }
+}
+
 // Creates user in firestore, returns back given userId
 router.post('/create-user', async (req, res) => {
   const { userId, email } = req.body;
@@ -287,43 +309,9 @@ router.get('/user/:userId', async (req, res) => {
       details: error.message
     });
   }
-});
-
-async function checkStripeSubscriptionStatus(stripeCustomerId) {
-  if (!stripeCustomerId) {
-    return { 
-      subscription: 'free',
-      cancelAtPeriodEnd: false 
-    };
-  }
-
-  try {
-    const subscriptions = await stripe.subscriptions.list({
-      customer: stripeCustomerId,
-      status: 'active',
-      limit: 1
-    });
-
-    if (subscriptions.data.length > 0) {
-      const subscription = subscriptions.data[0];
-      return {
-        subscription: 'premium',
-        cancelAtPeriodEnd: subscription.cancel_at_period_end,
-        currentPeriodEnd: new Date(subscription.current_period_end * 1000).toISOString()
-      };
-    }
-
-    return { 
-      subscription: 'free',
-      cancelAtPeriodEnd: false 
-    };
-  } catch (error) {
-    console.error('Error checking Stripe subscription:', error);
-    return { 
-      subscription: 'free',
-      cancelAtPeriodEnd: false 
-    };
-  }
 }
 
-module.exports = router;
+module.exports = {
+  router,
+  checkStripeSubscriptionStatus
+};
