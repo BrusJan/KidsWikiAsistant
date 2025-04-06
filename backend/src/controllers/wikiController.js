@@ -1,5 +1,6 @@
 const axios = require('axios');
 const firebaseAdmin = require('../config/firebase');
+const { checkStripeSubscriptionStatus } = require('../routes/authRoutes');
 
 const search = async (req, res) => {
   const { query, userId } = req.query;
@@ -13,7 +14,7 @@ const search = async (req, res) => {
       });
     }
 
-    // Check user's subscription status
+    // Get user document to check stripeCustomerId
     const userRef = firebaseAdmin.firestore().collection('users').doc(userId);
     const userDoc = await userRef.get();
     
@@ -27,8 +28,11 @@ const search = async (req, res) => {
 
     const userData = userDoc.data();
     
+    // Check subscription status directly with Stripe
+    const subscriptionStatus = await checkStripeSubscriptionStatus(userData.stripeCustomerId);
+    
     // If user is not premium, check API calls
-    if (userData.subscriptionStatus !== 'premium') {
+    if (subscriptionStatus.subscription !== 'premium') {
       if ((userData.apiCallsUsed || 0) >= (userData.apiCallsLimit || 10)) {
         return res.status(403).json({
           title: 'Limit vyčerpán',
@@ -37,11 +41,11 @@ const search = async (req, res) => {
         });
       }
       
-      // Initialize fields if they don't exist and increment
-      await userRef.set({
-        apiCallsUsed: (userData.apiCallsUsed || 0) + 1,
-        totalSearchQueries: (userData.totalSearchQueries || 0) + 1
-      }, { merge: true });
+      // Increment API calls for free users
+      await userRef.update({
+        apiCallsUsed: firebaseAdmin.firestore.FieldValue.increment(1),
+        totalSearchQueries: firebaseAdmin.firestore.FieldValue.increment(1)
+      });
     } else {
       // For premium users, just increment total queries
       await userRef.update({
