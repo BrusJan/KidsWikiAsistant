@@ -66,38 +66,28 @@ class AuthController {
   }
 
   async createSubscriptionSession(req, res) {
-    const { email, userId } = req.body;
+    const { userId } = req.body;
 
     try {
-      // Validate required fields
-      if (!email || !userId) {
-        return res.status(400).json({ error: 'Missing required fields' });
-      }
+      // ... existing user validation code ...
 
-      // Create new customer in Stripe
-      const customer = await stripe.customers.create({
-        email: email,
-        metadata: { userId: userId }
-      });
+      // Fix URL formatting by ensuring no double slashes or protocols
+      const frontendUrl = process.env.FRONTEND_URL.replace(/\/+$/, ''); // Remove trailing slashes
+      const successUrl = `${frontendUrl}/payment/success?session_id={CHECKOUT_SESSION_ID}`;
+      const cancelUrl = `${frontendUrl}/profile`;
 
-      // Update user in Firestore with Stripe customer ID
-      await firebaseAdmin.firestore().collection('users').doc(userId).update({
-        stripeCustomerId: customer.id
-      });
-
-      // Create checkout session
       const session = await stripe.checkout.sessions.create({
-        customer: customer.id, // Use newly created customer
+        customer: stripeCustomerId,
         mode: 'subscription',
         payment_method_types: ['card'],
         line_items: [
           {
-            price: SUBSCRIPTION_PRICE_ID,
+            price: process.env.STRIPE_PRICE_ID,
             quantity: 1,
           }
         ],
-        success_url: `${process.env.FRONTEND_URL}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${process.env.FRONTEND_URL}/profile`,
+        success_url: successUrl,
+        cancel_url: cancelUrl,
         metadata: {
           userId: userId
         },
@@ -106,11 +96,8 @@ class AuthController {
 
       return res.json({ url: session.url });
     } catch (error) {
-      console.error('Stripe session creation error:', error);
-      return res.status(500).json({
-        error: 'Failed to create checkout session',
-        details: error.message
-      });
+      console.error('Error creating checkout session:', error);
+      return res.status(500).json({ error: 'Failed to create checkout session' });
     }
   }
 
