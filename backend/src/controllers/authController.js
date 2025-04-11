@@ -235,44 +235,6 @@ class AuthController {
   // Add other controller methods...
 }
 
-// Add static method to the class
-AuthController.checkSubscriptionStatus = async (stripeCustomerId) => {
-  if (!stripeCustomerId) {
-    return { 
-      subscription: 'free',
-      cancelAtPeriodEnd: false
-    };
-  }
-
-  try {
-    const subscriptions = await stripe.subscriptions.list({
-      customer: stripeCustomerId,
-      status: 'active',
-      limit: 1
-    });
-
-    if (subscriptions.data.length > 0) {
-      const subscription = subscriptions.data[0];
-      return {
-        subscription: 'premium',
-        cancelAtPeriodEnd: subscription.cancel_at_period_end,
-        currentPeriodEnd: new Date(subscription.current_period_end * 1000).toISOString()
-      };
-    }
-
-    return { 
-      subscription: 'free',
-      cancelAtPeriodEnd: false
-    };
-  } catch (error) {
-    console.error('Error checking Stripe subscription:', error);
-    return { 
-      subscription: 'free',
-      cancelAtPeriodEnd: false
-    };
-  }
-};
-
 // Create instance and export both the instance and class
 const authController = new AuthController();
 module.exports = {

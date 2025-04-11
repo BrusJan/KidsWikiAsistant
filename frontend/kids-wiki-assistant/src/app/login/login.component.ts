@@ -4,17 +4,19 @@ import { FormsModule } from '@angular/forms';
 import { FirebaseUIModule } from 'firebaseui-angular';
 import { Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
+import { TranslatePipe } from '../translations/translate.pipe';
+import { LanguageService } from '../services/language.service';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FirebaseUIModule, FormsModule],
+  imports: [CommonModule, FirebaseUIModule, FormsModule, TranslatePipe],
   template: `
     <div class="min-h-screen flex items-center justify-center bg-background py-12 px-4 sm:px-6 lg:px-8">
       <div class="max-w-md w-full space-y-8 bg-white p-8 rounded-lg shadow-lg">
         <div class="flex flex-col gap-6 justify-between items-center">
           <h2 class="text-3xl font-extrabold text-gray-900">
-            {{ isRegistering ? 'Registrace' : 'Přihlášení do aplikace' }}
+            {{ isRegistering ? 'login.register.title' : 'login.title' | translate }}
           </h2>
         </div>
 
@@ -29,17 +31,17 @@ import { AuthService } from '../services/auth.service';
                      [(ngModel)]="email" 
                      required
                      class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-primary focus:border-primary focus:z-10 sm:text-sm"
-                     placeholder="Email">
+                     [placeholder]="'login.email' | translate">
             </div>
             <div>
-              <label for="password" class="sr-only">Heslo</label>
+              <label for="password" class="sr-only">{{ 'login.password' | translate }}</label>
               <input id="password" 
                      name="password" 
                      type="password" 
                      [(ngModel)]="password" 
                      required
                      class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-primary focus:border-primary focus:z-10 sm:text-sm"
-                     placeholder="Heslo">
+                     [placeholder]="'login.password' | translate">
             </div>
           </div>
 
@@ -51,7 +53,7 @@ import { AuthService } from '../services/auth.service';
                 [disabled]="isResettingPassword"
                 class="text-primary hover:text-primary/90 focus:outline-none"
               >
-                Zapomenuté heslo?
+                {{ 'login.forgot_password' | translate }}
               </button>
             </div>
           </div>
@@ -66,7 +68,7 @@ import { AuthService } from '../services/auth.service';
           <div>
             <button type="submit" 
                     class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
-              {{ isRegistering ? 'Zaregistrovat se' : 'Přihlásit se' }}
+              {{ isRegistering ? 'login.register.button' : 'login.button' | translate }}
             </button>
           </div>
 
@@ -78,7 +80,7 @@ import { AuthService } from '../services/auth.service';
             <button type="button" 
                     (click)="toggleMode()"
                     class="font-medium text-primary hover:text-primary/80">
-              {{ isRegistering ? 'Již máte účet? Přihlaste se' : 'Nemáte účet? Zaregistrujte se' }}
+              {{ isRegistering ? 'login.login.switch' : 'login.register.switch' | translate }}
             </button>
           </div>
         </form>
@@ -89,7 +91,7 @@ import { AuthService } from '../services/auth.service';
           </div>
           <div class="relative flex justify-center text-sm">
             <span class="px-2 bg-white text-gray-500">
-              Nebo pokračovat pomocí
+              {{ 'login.or' | translate }}
             </span>
           </div>
         </div>
@@ -111,14 +113,15 @@ export class LoginComponent {
 
   constructor(
     private router: Router,
-    private authService: AuthService
+    private authService: AuthService,
+    private languageService: LanguageService
   ) {}
 
   async emailLogin() {
     try {
       await this.authService.loginUser(this.email, this.password).toPromise();
     } catch (error: any) {
-      this.error = 'Nesprávný email nebo heslo';
+      this.error = this.languageService.translate('login.error.invalid_credentials');
       console.error('Login error:', error);
     }
   }

@@ -11,6 +11,7 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 import * as firebaseui from 'firebaseui';
 import { NgxStripeModule } from 'ngx-stripe';
+import { LanguageService } from './services/language.service';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBrRtlI4rxKX6jr-5WbVeiPMhNk6GzxA9Y",
@@ -42,6 +43,7 @@ export const appConfig: ApplicationConfig = {
       AngularFireDatabaseModule,
       FirebaseUIModule.forRoot(firebaseUiAuthConfig),
       NgxStripeModule.forRoot('your_stripe_publishable_key') // Add your Stripe publishable key here
-    ])
+    ]),
+    LanguageService
   ]
 };

@@ -2,6 +2,7 @@ const axios = require('axios');
 const admin = require('../config/firebase');
 const { AuthController } = require('../controllers/authController');
 const { FieldValue } = require('firebase-admin/firestore');
+const config = require('../config/config');
 
 const search = async (req, res) => {
   const { query, userId } = req.query;
@@ -9,8 +10,7 @@ const search = async (req, res) => {
   try {
     if (!userId) {
       return res.status(401).json({
-        title: 'Chyba přístupu',
-        content: 'Pro tuto akci musíte být přihlášen.',
+        errorCode: 'ERROR_NOT_AUTHENTICATED',
         url: ''
       });
     }
@@ -21,8 +21,7 @@ const search = async (req, res) => {
     
     if (!userDoc.exists) {
       return res.status(404).json({
-        title: 'Chyba přístupu',
-        content: 'Uživatel nenalezen.',
+        errorCode: 'ERROR_USER_NOT_FOUND',
         url: ''
       });
     }
@@ -33,8 +32,7 @@ const search = async (req, res) => {
     if (subscriptionStatus.subscription === 'free') {
       if ((userData.apiCallsUsed || 0) >= (userData.apiCallsLimit || 10)) {
         return res.status(403).json({
-          title: 'Limit vyčerpán',
-          content: 'Dosáhli jste maximálního počtu dotazů. Pro pokračování si prosím aktivujte předplatné.',
+          errorCode: 'ERROR_LIMIT_EXCEEDED',
           url: ''
         });
       }
@@ -53,28 +51,30 @@ const search = async (req, res) => {
 
     if (!query || query.trim().length === 0) {
       return res.status(400).json({
-        title: 'Chyba vyhledávání',
-        content: 'Nezadal jsi žádný dotaz k vyhledání.',
+        errorCode: 'ERROR_EMPTY_QUERY',
         url: ''
       });
     }
     
+    // Get Wikipedia API URL based on configured language
+    const wikipediaApiUrl = config.getWikipediaUrl();
+    
     // First API call - search for articles
-    const searchResponse = await axios.get(`https://cs.wikipedia.org/w/api.php`, {
+    const searchResponse = await axios.get(wikipediaApiUrl, {
       params: {
         action: 'query',
         list: 'search',
         srsearch: query,
         format: 'json',
         origin: '*',
-        language: 'cs'
+        language: config.LANGUAGE
       }
     });
 
     if (!searchResponse.data.query.search.length) {
       return res.status(404).json({
-        title: 'Článek nenalezen',
-        content: `Bohužel jsem nenašel žádný článek o "${query}". Zkus to prosím s jiným dotazem.`,
+        errorCode: 'ERROR_ARTICLE_NOT_FOUND',
+        query: query, // Pass query for interpolation in translation
         url: ''
       });
     }
@@ -83,7 +83,7 @@ const search = async (req, res) => {
     const firstArticle = searchResponse.data.query.search[0];
     
     try {
-      const contentResponse = await axios.get(`https://cs.wikipedia.org/w/api.php`, {
+      const contentResponse = await axios.get(wikipediaApiUrl, {
         params: {
           action: 'query',
           prop: 'extracts',
@@ -100,23 +100,24 @@ const search = async (req, res) => {
       
       if (!pages[pageId].extract) {
         return res.status(404).json({
+          errorCode: 'ERROR_NO_CONTENT',
           title: firstArticle.title,
-          content: 'Bohužel se nepodařilo načíst obsah článku. Zkus to prosím znovu.',
           url: ''
         });
       }
 
+      // Use language-specific Wikipedia URL for article link
       res.json({
         title: firstArticle.title,
         content: pages[pageId].extract,
-        url: `https://cs.wikipedia.org/wiki/${encodeURIComponent(firstArticle.title)}`
+        url: `https://${config.LANGUAGE}.wikipedia.org/wiki/${encodeURIComponent(firstArticle.title)}`
       });
 
     } catch (contentError) {
       console.error('Error fetching article content:', contentError);
       res.status(500).json({
+        errorCode: 'ERROR_CONTENT_FETCH_FAILED',
         title: firstArticle.title,
-        content: 'Při načítání článku došlo k chybě. Zkus to prosím později.',
         url: ''
       });
     }
@@ -124,8 +125,7 @@ const search = async (req, res) => {
   } catch (error) {
     console.error('Search error:', error);
     return res.status(500).json({
-      title: 'Chyba vyhledávání',
-      content: 'Nepodařilo se najít požadované informace.',
+      errorCode: 'ERROR_SEARCH_FAILED',
       url: ''
     });
   }

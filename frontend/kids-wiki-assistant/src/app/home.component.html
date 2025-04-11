@@ -11,21 +11,47 @@
           {{ user.email }}
         </span>
 
+        <!-- Language Switcher -->
+        <div class="relative language-switcher">
+          <button 
+            (click)="toggleLanguageMenu($event)"
+            class="flex items-center px-3 py-1.5 text-sm font-medium text-gray-700 bg-white rounded-md hover:bg-gray-50 transition-colors border border-gray-300"
+          >
+            {{ getCurrentLanguage().flag }} {{ getCurrentLanguage().code.toUpperCase() }}
+            <svg class="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+          <div
+            *ngIf="showLanguageMenu" 
+            class="absolute right-0 mt-1 py-1 w-32 bg-white rounded-md shadow-lg z-10 border border-gray-200"
+          >
+            <button 
+              *ngFor="let lang of availableLanguages"
+              (click)="changeLanguage(lang.code); toggleLanguageMenu()"
+              class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+              [class.bg-gray-100]="isCurrentLanguage(lang.code)"
+            >
+              {{ lang.flag }} {{ lang.name }}
+            </button>
+          </div>
+        </div>
+
         <!-- Profile and Logout buttons -->
         <ng-container *ngIf="user$ | async; else loginBtn">
           <button (click)="navigateToProfile()"
             class="px-4 py-2 text-sm font-medium text-white bg-primary rounded-md hover:bg-primary/90 transition-colors">
-            Profil
+            {{ 'app.profile' | translate }}
           </button>
           <button (click)="logout()"
             class="px-4 py-2 text-sm font-medium text-white bg-red-500 rounded-md hover:bg-red-600 transition-colors">
-            Odhlásit se
+            {{ 'app.logout' | translate }}
           </button>
         </ng-container>
         <ng-template #loginBtn>
           <button (click)="login()"
             class="px-4 py-2 text-sm font-medium text-white bg-primary rounded-md hover:bg-primary/90 transition-colors">
-            Přihlásit se
+            {{ 'app.login' | translate }}
           </button>
         </ng-template>
       </div>
@@ -42,19 +68,22 @@
 <section class="p-4">
   <div class="max-w-7xl mx-auto">
     <h1 class="text-6xl text-center mb-8 text-text font-black">
-      Vikitorek
+      {{ 'app.title' | translate }}
     </h1>
 
     <div class="w-full max-w-lg mx-auto">
       <div *ngIf="!(user$ | async)" class="text-center mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-        <p class="text-sm text-yellow-700">Pro vyhledávání se prosím <button (click)="login()"
-            class="text-primary hover:text-primary/90 underline">přihlaste</button></p>
+        <p class="text-sm text-yellow-700">{{ 'app.error.not_logged_in' | translate }} 
+          <button (click)="login()" class="text-primary hover:text-primary/90 underline">
+            {{ 'app.login' | translate }}
+          </button>
+        </p>
       </div>
     </div>
 
     <!-- Example Pills -->
     <div class="flex justify-center gap-2 mb-4 flex-wrap items-center">
-      <p class="text-sm text-gray-600">Vyzkoušejte:</p>
+      <p class="text-sm text-gray-600">{{ 'app.search.examples' | translate }}</p>
       <button *ngFor="let example of searchExamples" (click)="searchExample(example)"
         [disabled]="isLoading || !(user$ | async)"
         class="px-4 py-2 text-sm bg-bubble hover:bg-bubble/70 rounded-full transition-colors shadow-sm hover:shadow text-gray-600 hover:text-gray-800 focus:outline-none focus:ring-2 focus:ring-primary/25 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-bubble disabled:hover:shadow-none">
@@ -66,7 +95,7 @@
       [ngClass]="{'opacity-70': isLoading}">
       <div class="relative flex-1 max-w-lg">
         <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-600"></i>
-        <input #searchInput type="text" name="searchQuery" placeholder="Zadej klíčové slovo?" [(ngModel)]="searchQuery"
+        <input #searchInput type="text" name="searchQuery" [placeholder]="'app.search.placeholder' | translate" [(ngModel)]="searchQuery"
           [ngModelOptions]="{standalone: true}" (keyup.enter)="search()" [disabled]="isLoading || !(user$ | async)"
           class="w-full h-12 pl-12 pr-14 text-base border-2 border-input-border rounded-lg outline-none focus:border-primary focus:ring-2 focus:ring-primary/25 disabled:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-70">
 

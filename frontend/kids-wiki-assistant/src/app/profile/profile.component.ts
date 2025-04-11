@@ -1,8 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
-import { environment } from '../../environments/environment';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { animate, state, style, transition, trigger } from '@angular/animations';
 import { AuthService } from '../services/auth.service';
@@ -10,11 +8,13 @@ import { Subject, BehaviorSubject } from 'rxjs';
 import { finalize, takeUntil } from 'rxjs/operators';
 import { StripeService } from '../services/stripe.service';
 import { RouterModule } from '@angular/router';
+import { TranslatePipe } from '../translations/translate.pipe';
+import { LanguageService } from '../services/language.service';
 
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, TranslatePipe],
   animations: [
     trigger('expandCollapse', [
       state('collapsed', style({ height: '0', overflow: 'hidden', opacity: 0 })),
@@ -33,16 +33,16 @@ import { RouterModule } from '@angular/router';
             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
             </svg>
-            Zpět na hlavní stránku
+            {{ 'app.back.home' | translate }}
           </button>
         </div>
 
         <div class="bg-white shadow rounded-lg overflow-hidden">
           <!-- Profile Header -->
           <div class="px-4 py-5 sm:px-6 bg-primary/10">
-            <h3 class="text-lg leading-6 font-medium text-gray-900">Uživatelský profil</h3>
+            <h3 class="text-lg leading-6 font-medium text-gray-900">{{ 'profile.title' | translate }}</h3>
             <p class="mt-1 max-w-2xl text-sm text-gray-500">
-              Správa předplatného a nastavení účtu
+              {{ 'profile.subtitle' | translate }}
             </p>
           </div>
 
@@ -50,7 +50,7 @@ import { RouterModule } from '@angular/router';
           <div class="px-4 py-5 sm:p-6">
             <div *ngIf="user$ | async as user; else loading">
               <div class="mb-6">
-                <h4 class="text-base font-medium text-gray-900">Email</h4>
+                <h4 class="text-base font-medium text-gray-900">{{ 'profile.email' | translate }}</h4>
                 <p class="mt-1 text-sm text-gray-600">{{ user.email }}</p>
               </div>
 
@@ -69,7 +69,7 @@ import { RouterModule } from '@angular/router';
                   >
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                   </svg>
-                  <h4 class="text-base font-medium text-gray-900">Změna hesla</h4>
+                  <h4 class="text-base font-medium text-gray-900">{{ 'profile.change_password' | translate }}</h4>
                 </button>
 
                 <!-- Expandable Content -->
@@ -77,7 +77,7 @@ import { RouterModule } from '@angular/router';
                   <form [formGroup]="passwordForm" (ngSubmit)="changePassword()" class="mt-4 space-y-4">
                     <div>
                       <label for="currentPassword" class="block text-sm font-medium text-gray-700">
-                        Současné heslo
+                        {{ 'profile.current_password' | translate }}
                       </label>
                       <input
                         type="password"
@@ -88,7 +88,7 @@ import { RouterModule } from '@angular/router';
                     </div>
                     <div>
                       <label for="newPassword" class="block text-sm font-medium text-gray-700">
-                        Nové heslo
+                        {{ 'profile.new_password' | translate }}
                       </label>
                       <input
                         type="password"
@@ -103,8 +103,8 @@ import { RouterModule } from '@angular/router';
                         [disabled]="!passwordForm.valid || isChangingPassword"
                         class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        <span *ngIf="!isChangingPassword">Změnit heslo</span>
-                        <span *ngIf="isChangingPassword">Měním heslo...</span>
+                        <span *ngIf="!isChangingPassword">{{ 'profile.submit_change' | translate }}</span>
+                        <span *ngIf="isChangingPassword">{{ 'profile.changing_password' | translate }}</span>
                       </button>
                     </div>
                   </form>
@@ -120,7 +120,7 @@ import { RouterModule } from '@angular/router';
 
               <!-- Subscription Status -->
               <div class="mb-6">
-                <h4 class="text-base font-medium text-gray-900">Předplatné</h4>
+                <h4 class="text-base font-medium text-gray-900">{{ 'profile.subscription' | translate }}</h4>
                 <div class="mt-1">
                   <div *ngIf="isLoading" class="flex items-center">
                     <div class="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin mr-2"></div>
@@ -128,18 +128,18 @@ import { RouterModule } from '@angular/router';
                   </div>
                   <ng-container *ngIf="!isLoading">
                     <p class="text-sm" [ngClass]="{'text-green-600': hasActiveSubscription, 'text-gray-600': !hasActiveSubscription}">
-                      {{ hasActiveSubscription ? 'Aktivní' : 'Neaktivní' }}
+                      {{ hasActiveSubscription ? 'profile.subscription.active' : 'profile.subscription.inactive' | translate }}
                     </p>
                     
                     <!-- Add subscription end date info -->
                     <p *ngIf="subscriptionEndsAt && cancelAtPeriodEnd" class="text-sm text-amber-600 mt-1">
-                      Předplatné je aktivní do {{ subscriptionEndsAt | date:'d.M.yyyy' }}
+                      {{ 'profile.subscription.until' | translate }}{{ subscriptionEndsAt | date:'d.M.yyyy' }}
                     </p>
 
                     <!-- API Calls Info for Free Users -->
                     <div *ngIf="!hasActiveSubscription" class="mt-2">
                       <div class="text-sm text-gray-600">
-                        <span>Použité dotazy zdarma: {{ apiCallsUsed }}/{{ apiCallsLimit }}</span>
+                        <span>{{ 'profile.subscription.used' | translate}}{{ apiCallsUsed + '/' + apiCallsLimit }}</span>
                         <div class="w-full bg-gray-200 rounded-full h-2.5 mt-1">
                           <div class="bg-primary h-2.5 rounded-full" 
                                [style.width]="(apiCallsUsed / apiCallsLimit * 100) + '%'">
@@ -155,7 +155,7 @@ import { RouterModule } from '@angular/router';
                       [disabled]="isLoading"
                       class="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed">
                       <span *ngIf="!isLoading">
-                        {{ hasActiveSubscription && cancelAtPeriodEnd ? 'Znovu aktivovat předplatné' : 'Aktivovat předplatné' }}
+                        {{ hasActiveSubscription && cancelAtPeriodEnd ? 'profile.subscription.reactivate' : 'profile.subscription.activate' | translate }}
                       </span>
                       <span *ngIf="isLoading">Načítání...</span>
                     </button>
@@ -166,7 +166,7 @@ import { RouterModule } from '@angular/router';
                       (click)="cancelSubscription()"
                       [disabled]="isLoading"
                       class="mt-4 inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed">
-                      {{ isLoading ? 'Rušení předplatného...' : 'Zrušit předplatné' }}
+                      {{ isLoading ? 'profile.subscription.canceling' : 'profile.subscription.cancel' | translate }}
                     </button>
                   </ng-container>
                 </div>
@@ -188,21 +188,21 @@ import { RouterModule } from '@angular/router';
          class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center p-4 z-50">
       <div class="bg-white rounded-lg p-6 max-w-sm w-full">
         <h3 class="text-lg font-medium text-gray-900 mb-4">
-          Zrušit předplatné?
+          {{ 'profile.subscription.confirm_cancel.title' | translate }}
         </h3>
         <p class="text-sm text-gray-500 mb-4">
-          Opravdu chcete zrušit předplatné? Vaše předplatné zůstane aktivní do konce aktuálního období.
+          {{ 'profile.subscription.confirm_cancel.message' | translate }}
         </p>
         <div class="flex justify-end space-x-4">
           <button
             (click)="cancelConfirmation()"
             class="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary rounded-md">
-            Zpět
+            {{ 'profile.subscription.confirm_cancel.back' | translate }}
           </button>
           <button
             (click)="confirmCancel()"
             class="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 rounded-md">
-            Zrušit předplatné
+            {{ 'profile.subscription.confirm_cancel.confirm' | translate }}
           </button>
         </div>
       </div>
@@ -229,7 +229,8 @@ export class ProfileComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private stripeService: StripeService,
     private router: Router,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private languageService: LanguageService
   ) {
     this.passwordForm = this.fb.group({
       currentPassword: ['', [Validators.required, Validators.minLength(6)]],

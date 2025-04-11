@@ -1,17 +1,31 @@
-import { Component, OnInit, ViewChild, ElementRef, NgZone } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef, NgZone, HostListener } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { trigger, transition, style, animate } from '@angular/animations';
-import { take, timeout } from 'rxjs/operators';
+import { take, timeout, takeUntil } from 'rxjs/operators';
 import { environment } from '../environments/environment';
 import { AngularFireDatabase } from '@angular/fire/compat/database';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, Subject } from 'rxjs';
 import { AuthService } from './services/auth.service';
+import { LanguageService, Language, LanguageOption } from './services/language.service';
+import { TranslatePipe } from './translations/translate.pipe';
 
+/**
+ * Interface representing the structure of stored responses in localStorage
+ * Key is the user ID, value is an array of search responses
+ */
 interface StoredResponses {
-  [userId: string]: any[];
+  [userId: string]: Array<{
+    id: number;           // Unique identifier (timestamp)
+    query: string;        // Original search query
+    title: string;        // Response title
+    content: string;      // Main content/summary
+    url: string;          // Wikipedia URL
+    originalTitle?: string; // Original Wikipedia article title
+    imageUrl?: string;    // Optional image URL if available
+  }>;
 }
 
 @Component({
@@ -22,7 +36,8 @@ interface StoredResponses {
     imports: [
         CommonModule,
         FormsModule,
-        RouterModule
+        RouterModule,
+        TranslatePipe
     ],
     animations: [
         trigger('fadeIn', [
@@ -33,7 +48,7 @@ interface StoredResponses {
         ]),
     ]
 })
-export class HomeComponent implements OnInit {
+export class HomeComponent implements OnInit, OnDestroy {
   @ViewChild('searchInput') searchInput!: ElementRef;
   user$ = this.authService.user$;
   searchQuery: string = '';
@@ -43,13 +58,24 @@ export class HomeComponent implements OnInit {
   selectedResponseId?: number;
   reportText = '';
 
-  // Add example searches
-  searchExamples = [
-    'Dinosauři',
-    'Vesmír',
-    'Pyramidy',
-    'Minecraft'
-  ];
+  // Define language-specific examples
+  private examplesByLanguage: Record<Language, string[]> = {
+    'cs': [
+      'Dinosauři',
+      'Vesmír',
+      'Pyramidy',
+      'Minecraft'
+    ],
+    'en': [
+      'Dinosaurs',
+      'Space',
+      'Pyramids',
+      'Minecraft'
+    ]
+  };
+
+  // Initialize examples with current language
+  searchExamples: string[] = [];
 
   // Add new properties
   public readonly FREE_QUERIES_LIMIT = 10;
@@ -58,16 +84,34 @@ export class HomeComponent implements OnInit {
   private anonymousId: string | null = null;
   showLimitExceededWarning = false;
 
+  // Language properties
+  showLanguageMenu = false;
+  availableLanguages: LanguageOption[] = this.languageService.availableLanguages;
+
+  // Add destroy subject
+  private destroy$ = new Subject<void>();
+
   constructor(
     private http: HttpClient,
     private router: Router,
     private authService: AuthService,
     private db: AngularFireDatabase,
-    private ngZone: NgZone
+    private ngZone: NgZone,
+    private languageService: LanguageService
   ) {
     // Initialize anonymous ID and queries reference in constructor
     this.anonymousId = localStorage.getItem('anonymousId') || this.generateAnonymousId();
     this.queriesRef = this.db.object(`queries/${this.anonymousId}`);
+    
+    // Update examples when language changes
+    this.updateExamplesForCurrentLanguage();
+    
+    // Subscribe to language changes
+    this.languageService.currentLanguage$.pipe(
+      takeUntil(this.destroy$)
+    ).subscribe(() => {
+      this.updateExamplesForCurrentLanguage();
+    });
   }
 
   ngOnInit() {
@@ -94,6 +138,12 @@ export class HomeComponent implements OnInit {
     });
   }
 
+  // Add ngOnDestroy method
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
   private async checkQueriesRemaining() {
     try {
       const queryCount = await firstValueFrom(this.queriesRef.valueChanges());
@@ -111,18 +161,12 @@ export class HomeComponent implements OnInit {
     return id;
   }
 
-  private async incrementQueryCount() {
-    if (!this.anonymousId) return;
-
-    try {
-      const currentCount = await +firstValueFrom(this.queriesRef.valueChanges()) || 0;
-      await this.queriesRef.set(currentCount + 1);
-      this.ngZone.run(() => {
-        this.queriesRemaining--;
-      });
-    } catch (error) {
-      console.error('Error incrementing query count:', error);
-    }
+  /**
+   * Updates search examples based on the current language setting
+   */
+  private updateExamplesForCurrentLanguage(): void {
+    const currentLanguage = this.languageService.getCurrentLanguage();
+    this.searchExamples = this.examplesByLanguage[currentLanguage] || this.examplesByLanguage['cs'];
   }
 
   async search() {
@@ -132,7 +176,7 @@ export class HomeComponent implements OnInit {
 
   private async performSearch() {
     this.isLoading = true;
-    this.showLimitExceededWarning = false; // Reset warning
+    this.showLimitExceededWarning = false;
     
     const user = await firstValueFrom(this.authService.user$);
     if (!user) {
@@ -141,7 +185,6 @@ export class HomeComponent implements OnInit {
       return;
     }
     
-    // Add debug logging
     console.log('Searching with userId:', user.uid);
     
     this.http.get(`${environment.apiUrl}/api/main/kids-summary`, {
@@ -153,8 +196,9 @@ export class HomeComponent implements OnInit {
       .pipe(timeout(30000))
       .subscribe({
         next: (response: any) => {
-          if (response.originalTitle === 'Limit vyčerpán') {
-            this.showLimitExceededWarning = true;
+          // Check if response contains an error code
+          if (response.errorCode) {
+            this.handleErrorCode(response);
           } else {
             this.responses.unshift({
               id: Date.now(),
@@ -162,8 +206,8 @@ export class HomeComponent implements OnInit {
               ...response
             });
             this.saveToLocalStorage();
+            this.searchQuery = '';
           }
-          this.searchQuery = '';
           this.isLoading = false;
           this.searchInput.nativeElement.focus();
         },
@@ -173,10 +217,47 @@ export class HomeComponent implements OnInit {
           if (error.status === 401) {
             this.router.navigate(['/login']);
           } else {
-            alert('Služba je momentálně nedostupná. Zkuste to prosím později.');
+            // Use translated message for the general error
+            const errorMessage = this.languageService.translate('error.service_unavailable');
+            alert(errorMessage);
           }
         }
       });
+  }
+
+  // Add new method to handle error codes with translations
+  private handleErrorCode(response: any): void {
+    const errorCode = response.errorCode.toLowerCase().replace(/^error_/, '');
+    const translationKey = `error.${errorCode}`;
+    
+    // Check if this is the limit exceeded error
+    if (errorCode === 'limit_exceeded') {
+      this.showLimitExceededWarning = true;
+      return;
+    }
+    
+    // Handle article not found special case with query parameter
+    if (errorCode === 'article_not_found' && response.query) {
+      const errorMessage = this.languageService.translate(translationKey, { query: response.query });
+      this.showErrorResponse(errorMessage);
+      return;
+    }
+    
+    // Handle general case
+    const errorMessage = this.languageService.translate(translationKey);
+    this.showErrorResponse(errorMessage);
+  }
+
+  // Show error as a "fake" response in the UI
+  private showErrorResponse(message: string): void {
+    this.responses.unshift({
+      id: Date.now(),
+      query: this.searchQuery,
+      originalTitle: this.languageService.translate('error.title'),
+      kidsFriendlySummary: message,
+      url: ''
+    });
+    this.saveToLocalStorage();
   }
 
   searchExample(query: string) {
@@ -244,5 +325,36 @@ export class HomeComponent implements OnInit {
       
       localStorage.setItem('wikiResponses', JSON.stringify(allResponses));
     });
+  }
+
+  // Close language menu when clicking outside
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent) {
+    const target = event.target as HTMLElement;
+    if (!target.closest('.language-switcher') && this.showLanguageMenu) {
+      this.showLanguageMenu = false;
+    }
+  }
+
+  toggleLanguageMenu(event?: MouseEvent) {
+    if (event) {
+      event.stopPropagation();
+    }
+    this.showLanguageMenu = !this.showLanguageMenu;
+  }
+
+  changeLanguage(lang: Language) {
+    this.languageService.changeLanguage(lang);
+    // Examples will be updated through the subscription
+  }
+
+  getCurrentLanguage(): LanguageOption {
+    const currentCode = this.languageService.getCurrentLanguage();
+    return this.availableLanguages.find(lang => lang.code === currentCode) 
+      || this.availableLanguages[0];
+  }
+
+  isCurrentLanguage(code: Language): boolean {
+    return this.languageService.getCurrentLanguage() === code;
   }
 }
