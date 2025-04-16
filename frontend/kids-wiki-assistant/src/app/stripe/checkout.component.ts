@@ -4,7 +4,6 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { environment } from '../../environments/environment';
-import { loadStripe } from '@stripe/stripe-js';
 
 @Component({
   selector: 'app-checkout',
