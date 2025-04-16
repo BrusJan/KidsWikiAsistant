@@ -71,6 +71,36 @@ export class HomeComponent implements OnInit, OnDestroy {
       'Space',
       'Pyramids',
       'Minecraft'
+    ],
+    'es': [
+      'Dinosaurios',
+      'Espacio',
+      'Pirámides',
+      'Minecraft'
+    ],
+    'de': [
+      'Dinosaurier',
+      'Weltraum',
+      'Pyramiden',
+      'Minecraft'
+    ],
+    'fr': [
+      'Dinosaures',
+      'Espace',
+      'Pyramides',
+      'Minecraft'
+    ],
+    'it': [
+      'Dinosauri',
+      'Spazio',
+      'Piramidi',
+      'Minecraft'
+    ],
+    'pl': [
+      'Dinozaury',
+      'Kosmos',
+      'Piramidy',
+      'Minecraft'
     ]
   };
 
@@ -185,12 +215,16 @@ export class HomeComponent implements OnInit, OnDestroy {
       return;
     }
     
-    console.log('Searching with userId:', user.uid);
+    // Get current language from language service
+    const currentLanguage = this.languageService.getCurrentLanguage();
+    
+    console.log('Searching with userId:', user.uid, 'language:', currentLanguage);
     
     this.http.get(`${environment.apiUrl}/api/main/kids-summary`, {
       params: {
         query: this.searchQuery,
-        userId: user.uid
+        userId: user.uid,
+        language: currentLanguage // Add language parameter
       }
     })
       .pipe(timeout(30000))
@@ -214,7 +248,9 @@ export class HomeComponent implements OnInit, OnDestroy {
         error: (error) => {
           console.error('Search error:', error);
           this.isLoading = false;
-          if (error.status === 401) {
+          if (error.error.errorCode) {
+            this.handleErrorCode(error.error);
+          } else if (error.status === 401) {
             this.router.navigate(['/login']);
           } else {
             // Use translated message for the general error
@@ -230,14 +266,15 @@ export class HomeComponent implements OnInit, OnDestroy {
     const errorCode = response.errorCode.toLowerCase().replace(/^error_/, '');
     const translationKey = `error.${errorCode}`;
     
+    console.log('errorCode', errorCode, 'translationKey:', translationKey);
     // Check if this is the limit exceeded error
-    if (errorCode === 'limit_exceeded') {
+    if (errorCode === 'ERROR_LIMIT_EXCEEDED') {
       this.showLimitExceededWarning = true;
       return;
     }
     
     // Handle article not found special case with query parameter
-    if (errorCode === 'article_not_found' && response.query) {
+    if (errorCode === 'ERROR_ARTICLE_NOT_FOUND' && response.query) {
       const errorMessage = this.languageService.translate(translationKey, { query: response.query });
       this.showErrorResponse(errorMessage);
       return;

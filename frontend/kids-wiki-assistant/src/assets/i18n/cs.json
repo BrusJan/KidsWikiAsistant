@@ -26,7 +26,7 @@
   "profile.subscription.active": "Aktivní",
   "profile.subscription.inactive": "Neaktivní",
   "profile.subscription.until": "Předplatné je aktivní do ",
-  "profile.subscription.used": "Použité dotazy zdarma:",
+  "profile.subscription.used": "Použité dotazy zdarma: ",
   "profile.subscription.activate": "Aktivovat předplatné",
   "profile.subscription.reactivate": "Znovu aktivovat předplatné",
   "profile.subscription.cancel": "Zrušit předplatné",
@@ -35,6 +35,8 @@
   "profile.subscription.confirm_cancel.message": "Opravdu chcete zrušit předplatné? Vaše předplatné zůstane aktivní do konce aktuálního období.",
   "profile.subscription.confirm_cancel.back": "Zpět",
   "profile.subscription.confirm_cancel.confirm": "Zrušit předplatné",
+  "profile.subscription.checking": "Kontroluji stav předplatného...",
+  "profile.subscription.loading": "Načítání...",
 
   "login.title": "Přihlášení do aplikace",
   "login.register.title": "Registrace",
@@ -46,6 +48,10 @@
   "login.register.switch": "Nemáte účet? Zaregistrujte se",
   "login.login.switch": "Již máte účet? Přihlaste se",
   "login.or": "Nebo pokračovat pomocí",
+  "login.agree_terms": "Souhlasím s",
+  "login.terms_link": "Obchodními podmínkami",
+  "login.error.terms_required": "Musíte souhlasit s obchodními podmínkami",
+  "login.error.invalid_credentials": "Špatné jméno/heslo",
 
   "error.article_not_found": "Bohužel jsem nenašel žádný článek o \"{{query}}\". Zkus to prosím s jiným dotazem.",
   "error.empty_query": "Nezadal jsi žádný dotaz k vyhledání.",
@@ -57,5 +63,26 @@
   "error.content_fetch_failed": "Při načítání článku došlo k chybě. Zkus to prosím později.",
   "error.search_failed": "Nepodařilo se najít požadované informace.",
   "error.summary_generation_failed": "Nepodařilo se vygenerovat shrnutí. Zkuste to prosím později.",
-  "error.title": "Chyba při vyhledávání"
+  "error.title": "Chyba při vyhledávání",
+
+  "terms.title": "Obchodní podmínky",
+  "terms.last_updated": "Poslední aktualizace",
+  "terms.introduction": "Úvod",
+  "terms.introduction_text": "Vítejte ve Vikitorku. Tyto obchodní podmínky upravují používání našich webových stránek a služeb. Používáním našich služeb souhlasíte s těmito podmínkami.",
+  "terms.usage_rights": "Práva užívání",
+  "terms.usage_rights_text": "Služba poskytuje zjednodušený obsah Wikipedie pro vzdělávací účely. Veškerý obsah Wikipedie podléhá licenci Wikipedie.",
+  "terms.content_policy": "Zásady obsahu",
+  "terms.content_policy_text": "Uživatelé nesmí předkládat nevhodný, urážlivý nebo nezákonný obsah. Vyhrazujeme si právo takový obsah odstranit bez předchozího upozornění.",
+  "terms.subscription": "Podmínky předplatného",
+  "terms.subscription_text": "Uživatelé s bezplatným účtem jsou omezeni na 10 dotazů. Prémiová předplatná nabízejí neomezené dotazy. Poplatky za předplatné jsou nevratné, ale předplatné lze kdykoli zrušit.",
+  "terms.privacy": "Zásady ochrany osobních údajů",
+  "terms.privacy_text": "Shromažďujeme minimální data nezbytná k poskytování našich služeb. Podrobnosti o tom, jak nakládáme s vašimi údaji, najdete v našich Zásadách ochrany osobních údajů.",
+  "terms.limitations": "Omezení a disclaimer",
+  "terms.limitations_text": "Usilujeme o přesnost, ale nezaručujeme úplnost nebo spolehlivost obsahu. Služba je poskytována 'tak, jak je' bez záruk.",
+  "terms.contact": "Kontaktní informace",
+  "terms.contact_text": "S dotazy ohledně těchto podmínek nás prosím kontaktujte na adrese support@vikitorek.com.",
+
+  "footer.rights": "Všechna práva vyhrazena.",
+  "footer.terms": "Obchodní podmínky",
+  "footer.privacy": "Ochrana osobních údajů"
 }

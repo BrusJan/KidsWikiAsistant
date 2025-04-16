@@ -65,6 +65,17 @@ import { LanguageService } from '../services/language.service';
             </p>
           </div>
 
+          <div class="flex items-center mt-3">
+            <input id="terms-agreement" name="termsAgreement" type="checkbox" [(ngModel)]="termsAgreed" required
+              class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded">
+            <label for="terms-agreement" class="ml-2 block text-sm text-gray-900">
+              {{ 'login.agree_terms' | translate }} 
+              <a routerLink="/terms" target="_blank" class="text-primary hover:text-primary/80">
+                {{ 'login.terms_link' | translate }}
+              </a>
+            </label>
+          </div>
+
           <div>
             <button type="submit" 
                     class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
@@ -110,6 +121,7 @@ export class LoginComponent {
   isResettingPassword = false;
   resetPasswordMessage = '';
   resetPasswordError = false;
+  termsAgreed = false;
 
   constructor(
     private router: Router,
@@ -128,6 +140,11 @@ export class LoginComponent {
 
   async register() {
     try {
+      if (!this.termsAgreed) {
+        this.error = this.languageService.translate('login.error.terms_required');
+        return;
+      }
+      
       await this.authService.registerUser(this.email, this.password).toPromise();
       this.router.navigate(['/']);
     } catch (error: any) {

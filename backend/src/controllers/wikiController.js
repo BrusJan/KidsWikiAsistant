@@ -5,9 +5,12 @@ const { FieldValue } = require('firebase-admin/firestore');
 const config = require('../config/config');
 
 const search = async (req, res) => {
-  const { query, userId } = req.query;
+  const { query, userId, language } = req.query;
 
   try {
+    // Validate and get language (default to config if not provided)
+    const lang = isValidLanguage(language) ? language : config.LANGUAGE;
+
     if (!userId) {
       return res.status(401).json({
         errorCode: 'ERROR_NOT_AUTHENTICATED',
@@ -56,8 +59,8 @@ const search = async (req, res) => {
       });
     }
     
-    // Get Wikipedia API URL based on configured language
-    const wikipediaApiUrl = config.getWikipediaUrl();
+    // Get Wikipedia API URL based on the language parameter
+    const wikipediaApiUrl = `https://${lang}.wikipedia.org/w/api.php`;
     
     // First API call - search for articles
     const searchResponse = await axios.get(wikipediaApiUrl, {
@@ -67,7 +70,7 @@ const search = async (req, res) => {
         srsearch: query,
         format: 'json',
         origin: '*',
-        language: config.LANGUAGE
+        language: lang
       }
     });
 
@@ -110,7 +113,8 @@ const search = async (req, res) => {
       res.json({
         title: firstArticle.title,
         content: pages[pageId].extract,
-        url: `https://${config.LANGUAGE}.wikipedia.org/wiki/${encodeURIComponent(firstArticle.title)}`
+        url: `https://${lang}.wikipedia.org/wiki/${encodeURIComponent(firstArticle.title)}`,
+        language: lang // Include the language in the response
       });
 
     } catch (contentError) {
@@ -128,8 +132,15 @@ const search = async (req, res) => {
       errorCode: 'ERROR_SEARCH_FAILED',
       url: ''
     });
-  }
+  } 
 };
+
+// Helper function to validate language code
+function isValidLanguage(lang) {
+  // List of supported language codes
+  const supportedLanguages = ['cs', 'en', 'es', 'de', 'fr', 'it', 'ru', 'ja', 'zh', 'pl'];
+  return typeof lang === 'string' && supportedLanguages.includes(lang.toLowerCase());
+}
 
 module.exports = {
   search

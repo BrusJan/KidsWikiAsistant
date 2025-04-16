@@ -26,7 +26,7 @@
   "profile.subscription.active": "Active",
   "profile.subscription.inactive": "Inactive",
   "profile.subscription.until": "Subscription is active until ",
-  "profile.subscription.used": "Free queries used:",
+  "profile.subscription.used": "Free queries used: ",
   "profile.subscription.activate": "Activate subscription",
   "profile.subscription.reactivate": "Reactivate subscription",
   "profile.subscription.cancel": "Cancel subscription",
@@ -35,6 +35,8 @@
   "profile.subscription.confirm_cancel.message": "Are you sure you want to cancel your subscription? Your subscription will remain active until the end of the current period.",
   "profile.subscription.confirm_cancel.back": "Back",
   "profile.subscription.confirm_cancel.confirm": "Cancel subscription",
+  "profile.subscription.checking": "Checking subscription status...",
+  "profile.subscription.loading": "Loading...",
 
   "login.title": "Log in to the application",
   "login.register.title": "Registration",
@@ -46,6 +48,10 @@
   "login.register.switch": "Don't have an account? Register",
   "login.login.switch": "Already have an account? Log in",
   "login.or": "Or continue with",
+  "login.agree_terms": "I agree to the",
+  "login.terms_link": "Terms of Service",
+  "login.error.terms_required": "You must agree to the Terms of Service",
+  "login.error.invalid_credentials": "Invalid credentials.",
 
   "error.article_not_found": "I couldn't find any articles about \"{{query}}\". Please try a different query.",
   "error.empty_query": "You didn't enter any search query.",
@@ -57,5 +63,26 @@
   "error.content_fetch_failed": "An error occurred while loading the article. Please try again later.",
   "error.search_failed": "Failed to find the requested information.",
   "error.summary_generation_failed": "Failed to generate summary. Please try again later.",
-  "error.title": "Search Error"
+  "error.title": "Search Error",
+
+  "terms.title": "Terms of Service",
+  "terms.last_updated": "Last updated",
+  "terms.introduction": "Introduction",
+  "terms.introduction_text": "Welcome to Vikitorek. These Terms of Service govern your use of our website and services. By using our services, you agree to these terms.",
+  "terms.usage_rights": "Usage Rights",
+  "terms.usage_rights_text": "The service provides simplified Wikipedia content for educational purposes. All Wikipedia content is subject to Wikipedia's license.",
+  "terms.content_policy": "Content Policy",
+  "terms.content_policy_text": "Users may not submit inappropriate, offensive, or illegal content. We reserve the right to remove such content without notice.",
+  "terms.subscription": "Subscription Terms",
+  "terms.subscription_text": "Free users are limited to 10 queries. Premium subscriptions offer unlimited queries. Subscription fees are non-refundable but can be cancelled anytime.",
+  "terms.privacy": "Privacy Policy",
+  "terms.privacy_text": "We collect minimal data necessary to provide our services. See our Privacy Policy for details on how we handle your data.",
+  "terms.limitations": "Limitations and Disclaimer",
+  "terms.limitations_text": "We strive for accuracy but do not guarantee the completeness or reliability of content. The service is provided 'as is' without warranties.",
+  "terms.contact": "Contact Information",
+  "terms.contact_text": "For questions about these Terms, please contact us at support@vikitorek.com.",
+
+  "footer.rights": "All rights reserved.",
+  "footer.terms": "Terms of Service",
+  "footer.privacy": "Privacy Policy"
 }

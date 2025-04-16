@@ -124,7 +124,7 @@ import { LanguageService } from '../services/language.service';
                 <div class="mt-1">
                   <div *ngIf="isLoading" class="flex items-center">
                     <div class="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin mr-2"></div>
-                    <span class="text-sm text-gray-600">Kontroluji stav předplatného...</span>
+                    <span class="text-sm text-gray-600">{{ 'profile.subscription.checking' | translate }}</span>
                   </div>
                   <ng-container *ngIf="!isLoading">
                     <p class="text-sm" [ngClass]="{'text-green-600': hasActiveSubscription, 'text-gray-600': !hasActiveSubscription}">
