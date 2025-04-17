@@ -165,7 +165,7 @@ const getKidsFriendlySummary = async (req, res) => {
     } catch (error) {
         console.error('Error in getKidsFriendlySummary:', error);
         res.status(500).json({ 
-            errorCode: 'ERROR_SUMMARY_GENERATION_FAILED'
+            errorCode: 'summary_generation_failed'  // Changed from ERROR_SUMMARY_GENERATION_FAILED
         });
     }
 };

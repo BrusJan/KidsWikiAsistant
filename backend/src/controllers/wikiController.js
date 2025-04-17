@@ -35,7 +35,7 @@ const search = async (req, res) => {
     if (subscriptionStatus.subscription === 'free') {
       if ((userData.apiCallsUsed || 0) >= (userData.apiCallsLimit || 10)) {
         return res.status(403).json({
-          errorCode: 'ERROR_LIMIT_EXCEEDED',
+          errorCode: 'limit_exceeded', // Changed from ERROR_LIMIT_EXCEEDED
           url: ''
         });
       }
@@ -54,7 +54,7 @@ const search = async (req, res) => {
 
     if (!query || query.trim().length === 0) {
       return res.status(400).json({
-        errorCode: 'ERROR_EMPTY_QUERY',
+        errorCode: 'empty_query', // Changed from ERROR_EMPTY_QUERY
         url: ''
       });
     }
@@ -76,7 +76,7 @@ const search = async (req, res) => {
 
     if (!searchResponse.data.query.search.length) {
       return res.status(404).json({
-        errorCode: 'ERROR_ARTICLE_NOT_FOUND',
+        errorCode: 'article_not_found', // Changed from ERROR_ARTICLE_NOT_FOUND
         query: query, // Pass query for interpolation in translation
         url: ''
       });
@@ -103,7 +103,7 @@ const search = async (req, res) => {
       
       if (!pages[pageId].extract) {
         return res.status(404).json({
-          errorCode: 'ERROR_NO_CONTENT',
+          errorCode: 'no_content', // Changed from ERROR_NO_CONTENT
           title: firstArticle.title,
           url: ''
         });
@@ -120,7 +120,7 @@ const search = async (req, res) => {
     } catch (contentError) {
       console.error('Error fetching article content:', contentError);
       res.status(500).json({
-        errorCode: 'ERROR_CONTENT_FETCH_FAILED',
+        errorCode: 'content_fetch_failed', // Changed from ERROR_CONTENT_FETCH_FAILED
         title: firstArticle.title,
         url: ''
       });
@@ -129,7 +129,7 @@ const search = async (req, res) => {
   } catch (error) {
     console.error('Search error:', error);
     return res.status(500).json({
-      errorCode: 'ERROR_SEARCH_FAILED',
+      errorCode: 'search_failed', // Changed from ERROR_SEARCH_FAILED
       url: ''
     });
   } 

@@ -263,18 +263,21 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   // Add new method to handle error codes with translations
   private handleErrorCode(response: any): void {
-    const errorCode = response.errorCode.toLowerCase().replace(/^error_/, '');
+    // Get error code and normalize it
+    const rawErrorCode = response.errorCode || '';
+    const errorCode = rawErrorCode.toLowerCase().replace(/^error_/, '');
     const translationKey = `error.${errorCode}`;
     
-    console.log('errorCode', errorCode, 'translationKey:', translationKey);
+    console.log('Original errorCode:', rawErrorCode, 'Normalized:', errorCode, 'Translation key:', translationKey);
+    
     // Check if this is the limit exceeded error
-    if (errorCode === 'ERROR_LIMIT_EXCEEDED') {
+    if (errorCode === 'limit_exceeded') {
       this.showLimitExceededWarning = true;
       return;
     }
     
     // Handle article not found special case with query parameter
-    if (errorCode === 'ERROR_ARTICLE_NOT_FOUND' && response.query) {
+    if (errorCode === 'article_not_found' && response.query) {
       const errorMessage = this.languageService.translate(translationKey, { query: response.query });
       this.showErrorResponse(errorMessage);
       return;

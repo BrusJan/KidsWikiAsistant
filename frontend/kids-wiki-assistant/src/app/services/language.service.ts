@@ -181,4 +181,13 @@ export class LanguageService {
 
     return translation;
   }
+
+  public hasTranslation(key: string): boolean {
+    if (!this.translationsLoaded) {
+      return false;
+    }
+    
+    const currentLang = this.getCurrentLanguage();
+    return !!this.translations[currentLang][key];
+  }
 }
