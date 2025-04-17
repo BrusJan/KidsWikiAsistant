@@ -9,6 +9,7 @@
     "start": "ng serve",
     "build": "ng build",
     "build:cloudflare": "ng build --configuration=cloudflare",
+    "cloudflare": "npm ci --legacy-peer-deps --ignore-engines && npm run build:cloudflare",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "serve:ssr:kids-wiki-assistant": "node dist/kids-wiki-assistant/server/server.mjs"
