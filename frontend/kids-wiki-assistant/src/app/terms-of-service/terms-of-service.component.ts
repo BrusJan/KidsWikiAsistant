@@ -27,25 +27,49 @@ import { LanguageService } from '../services/language.service';
           </div>
           <div class="border-t border-gray-200">
             <div class="px-4 py-5 sm:p-6 prose max-w-none">
-              <h2>{{ 'terms.introduction' | translate }}</h2>
+              <h2 class="text-xl font-semibold mt-6">{{ 'terms.introduction' | translate }}</h2>
               <p>{{ 'terms.introduction_text' | translate }}</p>
-              
-              <h2>{{ 'terms.usage_rights' | translate }}</h2>
+
+              <h2 class="text-xl font-semibold mt-6">{{ 'terms.usage_rights' | translate }}</h2>
               <p>{{ 'terms.usage_rights_text' | translate }}</p>
-              
-              <h2>{{ 'terms.content_policy' | translate }}</h2>
+
+              <h2 class="text-xl font-semibold mt-6">{{ 'terms.content_policy' | translate }}</h2>
               <p>{{ 'terms.content_policy_text' | translate }}</p>
-              
-              <h2>{{ 'terms.subscription' | translate }}</h2>
+
+              <h2 class="text-xl font-semibold mt-6">{{ 'terms.subscription' | translate }}</h2>
               <p>{{ 'terms.subscription_text' | translate }}</p>
-              
-              <h2>{{ 'terms.privacy' | translate }}</h2>
+
+              <h2 class="text-xl font-semibold mt-6">{{ 'terms.auto_renewal' | translate }}</h2>
+              <p>{{ 'terms.auto_renewal_text' | translate }}</p>
+
+              <h2 class="text-xl font-semibold mt-6">{{ 'terms.refunds' | translate }}</h2>
+              <p>{{ 'terms.refunds_text' | translate }}</p>
+
+              <h2 class="text-xl font-semibold mt-6">{{ 'terms.account_termination' | translate }}</h2>
+              <p>{{ 'terms.account_termination_text' | translate }}</p>
+
+              <h2 class="text-xl font-semibold mt-6">{{ 'terms.user_responsibilities' | translate }}</h2>
+              <p>{{ 'terms.user_responsibilities_text' | translate }}</p>
+
+              <h2 class="text-xl font-semibold mt-6">{{ 'terms.privacy' | translate }}</h2>
               <p>{{ 'terms.privacy_text' | translate }}</p>
-              
-              <h2>{{ 'terms.limitations' | translate }}</h2>
+
+              <h2 class="text-xl font-semibold mt-6">{{ 'terms.service_availability' | translate }}</h2>
+              <p>{{ 'terms.service_availability_text' | translate }}</p>
+
+              <h2 class="text-xl font-semibold mt-6">{{ 'terms.third_party_services' | translate }}</h2>
+              <p>{{ 'terms.third_party_services_text' | translate }}</p>
+
+              <h2 class="text-xl font-semibold mt-6">{{ 'terms.limitations' | translate }}</h2>
               <p>{{ 'terms.limitations_text' | translate }}</p>
-              
-              <h2>{{ 'terms.contact' | translate }}</h2>
+
+              <h2 class="text-xl font-semibold mt-6">{{ 'terms.modifications' | translate }}</h2>
+              <p>{{ 'terms.modifications_text' | translate }}</p>
+
+              <h2 class="text-xl font-semibold mt-6">{{ 'terms.governing_law' | translate }}</h2>
+              <p>{{ 'terms.governing_law_text' | translate }}</p>
+
+              <h2 class="text-xl font-semibold mt-6">{{ 'terms.contact' | translate }}</h2>
               <p>{{ 'terms.contact_text' | translate }}</p>
             </div>
           </div>
