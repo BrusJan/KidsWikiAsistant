@@ -71,6 +71,11 @@ import { LanguageService } from '../services/language.service';
 
               <h2 class="text-xl font-semibold mt-6">{{ 'terms.contact' | translate }}</h2>
               <p>{{ 'terms.contact_text' | translate }}</p>
+
+              <section class="mt-6">
+                <h2 class="text-xl font-semibold mt-6">{{ 'terms.cookies' | translate }}</h2>
+                <p>{{ 'terms.cookies_text' | translate }}</p>
+              </section>
             </div>
           </div>
         </div>
@@ -79,7 +84,7 @@ import { LanguageService } from '../services/language.service';
   `
 })
 export class TermsComponent {
-  lastUpdated = '2023-07-01';
+  lastUpdated = '2025-04-21';
   
   constructor(private languageService: LanguageService) {}
 }

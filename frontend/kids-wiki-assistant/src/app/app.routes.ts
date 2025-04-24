@@ -5,6 +5,7 @@ import { ProfileComponent } from './profile/profile.component';
 import { CheckoutComponent } from './stripe/checkout.component';
 import { TermsComponent } from './terms-of-service/terms-of-service.component';
 import { SuccessComponent } from './stripe/success.component';
+import { PrivacyPolicyComponent } from './privacy-policy/privacy-policy.component';
 
 export const routes: Routes = [
   {
@@ -30,6 +31,10 @@ export const routes: Routes = [
   {
     path: 'terms',
     component: TermsComponent
+  },
+  {
+    path: 'privacy',
+    component: PrivacyPolicyComponent
   },
   {
     path: '**',

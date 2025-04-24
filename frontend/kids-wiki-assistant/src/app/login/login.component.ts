@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { FirebaseUIModule } from 'firebaseui-angular';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router'; // Add RouterLink import
 import { AuthService } from '../services/auth.service';
 import { TranslatePipe } from '../translations/translate.pipe';
 import { LanguageService } from '../services/language.service';
@@ -10,13 +10,13 @@ import { LanguageService } from '../services/language.service';
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FirebaseUIModule, FormsModule, TranslatePipe],
+  imports: [CommonModule, FirebaseUIModule, FormsModule, TranslatePipe, RouterLink], // Add RouterLink to imports
   template: `
     <div class="min-h-screen flex items-center justify-center bg-background py-12 px-4 sm:px-6 lg:px-8">
       <div class="max-w-md w-full space-y-8 bg-white p-8 rounded-lg shadow-lg">
         <div class="flex flex-col gap-6 justify-between items-center">
           <h2 class="text-3xl font-extrabold text-gray-900">
-            {{ isRegistering ? 'login.register.title' : 'login.title' | translate }}
+            {{ (isRegistering ? 'login.register.title' : 'login.title') | translate }}
           </h2>
         </div>
 
@@ -69,17 +69,17 @@ import { LanguageService } from '../services/language.service';
             <input id="terms-agreement" name="termsAgreement" type="checkbox" [(ngModel)]="termsAgreed" required
               class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded">
             <label for="terms-agreement" class="ml-2 block text-sm text-gray-900">
-              {{ 'login.agree_terms' | translate }} 
-              <a routerLink="/terms" target="_blank" class="text-primary hover:text-primary/80">
-                {{ 'login.terms_link' | translate }}
-              </a>
+              {{ 'login.agree_terms' | translate }}
             </label>
+            <a routerLink="/terms" target="_blank" class="text-primary hover:text-primary/80 cursor-pointer ml-1">
+              {{ 'login.terms_link' | translate }}
+            </a>
           </div>
 
           <div>
             <button type="submit" 
                     class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
-              {{ isRegistering ? 'login.register.button' : 'login.button' | translate }}
+              {{ (isRegistering ? 'login.register.button' : 'login.button') | translate }}
             </button>
           </div>
 
@@ -91,7 +91,7 @@ import { LanguageService } from '../services/language.service';
             <button type="button" 
                     (click)="toggleMode()"
                     class="font-medium text-primary hover:text-primary/80">
-              {{ isRegistering ? 'login.login.switch' : 'login.register.switch' | translate }}
+              {{ (isRegistering ? 'login.login.switch' : 'login.register.switch') | translate }}
             </button>
           </div>
         </form>
@@ -127,7 +127,7 @@ export class LoginComponent {
     private router: Router,
     private authService: AuthService,
     private languageService: LanguageService
-  ) {}
+  ) { }
 
   async emailLogin() {
     try {
@@ -144,7 +144,7 @@ export class LoginComponent {
         this.error = this.languageService.translate('login.error.terms_required');
         return;
       }
-      
+
       await this.authService.registerUser(this.email, this.password).toPromise();
       this.router.navigate(['/']);
     } catch (error: any) {
