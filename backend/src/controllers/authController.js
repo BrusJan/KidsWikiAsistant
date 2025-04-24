@@ -66,16 +66,47 @@ class AuthController {
   }
 
   async createSubscriptionSession(req, res) {
-    const { userId } = req.body;
+    const { userId, email } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({ error: 'Missing userId parameter' });
+    }
 
     try {
-      // ... existing user validation code ...
+      // Get user from Firestore first
+      const userDoc = await firebaseAdmin.firestore().collection('users').doc(userId).get();
+      
+      if (!userDoc.exists) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      const userData = userDoc.data();
+      let { stripeCustomerId } = userData;
+
+      // If user doesn't have a Stripe customer ID yet, create one
+      if (!stripeCustomerId) {
+        console.log(`Creating new Stripe customer for user ${userId}`);
+        const customer = await stripe.customers.create({
+          email: email || userData.email,
+          metadata: { firebaseUserId: userId }
+        });
+        
+        stripeCustomerId = customer.id;
+        
+        // Update the user record with the new Stripe customer ID
+        await firebaseAdmin.firestore().collection('users').doc(userId).update({
+          stripeCustomerId: stripeCustomerId
+        });
+        
+        console.log(`Created Stripe customer: ${stripeCustomerId} for user ${userId}`);
+      }
 
       // Fix URL formatting by ensuring no double slashes or protocols
       const frontendUrl = process.env.FRONTEND_URL.replace(/\/+$/, ''); // Remove trailing slashes
       const successUrl = `${frontendUrl}/payment/success?session_id={CHECKOUT_SESSION_ID}`;
       const cancelUrl = `${frontendUrl}/profile`;
 
+      // Now create the checkout session with the customer ID
       const session = await stripe.checkout.sessions.create({
         customer: stripeCustomerId,
         mode: 'subscription',

@@ -64,7 +64,7 @@ export class SuccessComponent implements OnInit {
         return;
       }
 
-      const response: any = await this.http.post(`${environment.apiUrl}/api/subscription/verify-session`, {
+      const response: any = await this.http.post(`${environment.apiUrl}/api/auth/subscription/verify-session`, {
         sessionId,
         userId: user.uid
       }).toPromise();
