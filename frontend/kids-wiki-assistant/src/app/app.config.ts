@@ -1,4 +1,4 @@
-import { ApplicationConfig, importProvidersFrom } from '@angular/core';
+import { ApplicationConfig, importProvidersFrom, isDevMode } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideHttpClient } from '@angular/common/http';
@@ -11,6 +11,7 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 import * as firebaseui from 'firebaseui';
 import { LanguageService } from './services/language.service';
+import { provideServiceWorker } from '@angular/service-worker';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBrRtlI4rxKX6jr-5WbVeiPMhNk6GzxA9Y",
@@ -42,6 +43,9 @@ export const appConfig: ApplicationConfig = {
       AngularFireDatabaseModule,
       FirebaseUIModule.forRoot(firebaseUiAuthConfig),
     ]),
-    LanguageService
+    LanguageService, provideServiceWorker('ngsw-worker.js', {
+            enabled: !isDevMode(),
+            registrationStrategy: 'registerWhenStable:30000'
+          })
   ]
 };

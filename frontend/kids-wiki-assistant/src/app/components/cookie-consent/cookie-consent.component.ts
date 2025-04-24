@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { TranslatePipe } from '../../translations/translate.pipe';
 import { trigger, transition, style, animate } from '@angular/animations';
 import { CookieConsentService } from '../../services/cookie-consent.service';
 import { LanguageService } from '../../services/language.service';
@@ -9,7 +8,7 @@ import { LanguageService } from '../../services/language.service';
 @Component({
   selector: 'app-cookie-consent',
   standalone: true,
-  imports: [CommonModule, RouterModule, TranslatePipe],
+  imports: [CommonModule, RouterModule],
   template: `
     <div *ngIf="!consentGiven" 
          class="fixed bottom-0 left-0 right-0 bg-white shadow-lg border-t border-gray-200 p-4 z-50 animate-slide-up"

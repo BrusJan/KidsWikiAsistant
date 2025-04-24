@@ -65,7 +65,7 @@ import { LanguageService } from '../services/language.service';
             </p>
           </div>
 
-          <div class="flex items-center mt-3">
+          <div class="flex items-center mt-3" *ngIf="isRegistering">
             <input id="terms-agreement" name="termsAgreement" type="checkbox" [(ngModel)]="termsAgreed" required
               class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded">
             <label for="terms-agreement" class="ml-2 block text-sm text-gray-900">
@@ -95,7 +95,7 @@ import { LanguageService } from '../services/language.service';
             </button>
           </div>
         </form>
-
+<!-- 
         <div class="relative my-4" *ngIf="!(user$ | async)">
           <div class="absolute inset-0 flex items-center">
             <div class="w-full border-t border-gray-300"></div>
@@ -107,7 +107,7 @@ import { LanguageService } from '../services/language.service';
           </div>
         </div>
 
-        <firebase-ui></firebase-ui>
+        <firebase-ui></firebase-ui> -->
       </div>
     </div>
   `,
