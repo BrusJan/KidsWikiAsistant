@@ -102,9 +102,11 @@ class AuthController {
       }
 
       // Fix URL formatting by ensuring no double slashes or protocols
-      const frontendUrl = process.env.FRONTEND_URL.replace(/\/+$/, ''); // Remove trailing slashes
+      const frontendUrl = process.env.FRONTEND_URL.replace(/^https?:\/\/+/, 'https://').replace(/\/+$/, ''); // Remove trailing slashes
       const successUrl = `${frontendUrl}/payment/success?session_id={CHECKOUT_SESSION_ID}`;
       const cancelUrl = `${frontendUrl}/profile`;
+
+      console.log(`Using success URL: ${successUrl}`); // Debug log
 
       // Now create the checkout session with the customer ID
       const session = await stripe.checkout.sessions.create({
