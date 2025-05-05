@@ -36,6 +36,8 @@
   "profile.subscription.confirm_cancel.confirm": "Zrušit předplatné",
   "profile.subscription.checking": "Kontroluji stav předplatného...",
   "profile.subscription.loading": "Načítání...",
+  "profile.subscription.load_error": "Nepodařilo se načíst stav předplatného. Zkuste to prosím později.",
+  "profile.subscription.retry": "Zkusit znovu",
   "login.title": "Přihlášení do aplikace",
   "login.register.title": "Registrace",
   "login.email": "Email",

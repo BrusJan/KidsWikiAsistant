@@ -36,6 +36,8 @@
   "profile.subscription.confirm_cancel.confirm": "Annulla abbonamento",
   "profile.subscription.checking": "Controllo stato abbonamento...",
   "profile.subscription.loading": "Caricamento...",
+  "profile.subscription.load_error": "Impossibile caricare lo stato dell'abbonamento. Riprova più tardi.",
+  "profile.subscription.retry": "Riprova",
   "login.title": "Accedi all'applicazione",
   "login.register.title": "Registrazione",
   "login.email": "Email",

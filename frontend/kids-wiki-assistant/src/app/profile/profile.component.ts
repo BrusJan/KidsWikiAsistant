@@ -4,8 +4,8 @@ import { Router } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { animate, state, style, transition, trigger } from '@angular/animations';
 import { AuthService } from '../services/auth.service';
-import { Subject, BehaviorSubject } from 'rxjs';
-import { finalize, takeUntil } from 'rxjs/operators';
+import { Subject, BehaviorSubject, of, throwError } from 'rxjs';
+import { finalize, takeUntil, catchError, timeout, timeoutWith } from 'rxjs/operators';
 import { StripeService } from '../services/stripe.service';
 import { RouterModule } from '@angular/router';
 import { TranslatePipe } from '../translations/translate.pipe';
@@ -126,7 +126,24 @@ import { LanguageService } from '../services/language.service';
                     <div class="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin mr-2"></div>
                     <span class="text-sm text-gray-600">{{ 'profile.subscription.checking' | translate }}</span>
                   </div>
-                  <ng-container *ngIf="!isLoading">
+                  
+                  <!-- Error State with Retry Button -->
+                  <div *ngIf="subscriptionLoadError" class="mt-2">
+                    <p class="text-sm text-red-500 mb-2">
+                      {{ 'profile.subscription.load_error' | translate }}
+                    </p>
+                    <button
+                      (click)="retryLoadSubscription()"
+                      class="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                      <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                      </svg>
+                      {{ 'profile.subscription.retry' | translate }}
+                    </button>
+                  </div>
+                  
+                  <ng-container *ngIf="!isLoading && !subscriptionLoadError">
+                    <!-- Your existing subscription status display code -->
                     <p class="text-sm" [ngClass]="{'text-green-600': hasActiveSubscription, 'text-gray-600': !hasActiveSubscription}">
                       {{ (hasActiveSubscription ? 'profile.subscription.active' : 'profile.subscription.inactive') | translate }}
                     </p>
@@ -224,6 +241,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
   subscriptionEndsAt?: Date;
   cancelAtPeriodEnd = false;
   showConfirmation$ = new BehaviorSubject<boolean>(false);
+  subscriptionLoadError = false;
 
   constructor(
     private authService: AuthService,
@@ -248,23 +266,31 @@ export class ProfileComponent implements OnInit, OnDestroy {
   }
 
   private checkSubscriptionStatus() {
+    this.isLoading = true;
+    this.subscriptionLoadError = false;
+    
     this.stripeService.loadSubscriptionStatus().pipe(
-      takeUntil(this.destroy$)
+      timeout(5000), // 5 second timeout
+      takeUntil(this.destroy$),
+      catchError(error => {
+        console.error('Error loading subscription:', error);
+        this.subscriptionLoadError = true;
+        this.isLoading = false;
+        return of(null); // Return empty observable to handle error gracefully
+      })
     ).subscribe({
       next: (status) => {
-        this.hasActiveSubscription = status.subscription === 'premium';
-        if (status.currentPeriodEnd) {
-          this.subscriptionEndsAt = new Date(status.currentPeriodEnd);
+        if (status) { // Only process if we got a valid response
+          this.hasActiveSubscription = status.subscription === 'premium';
+          if (status.currentPeriodEnd) {
+            this.subscriptionEndsAt = new Date(status.currentPeriodEnd);
+          }
+          this.cancelAtPeriodEnd = status.cancelAtPeriodEnd;
+          if (!this.hasActiveSubscription) {
+            this.apiCallsUsed = status.apiCallsUsed || 0;
+            this.apiCallsLimit = status.apiCallsLimit || 10;
+          }
         }
-        this.cancelAtPeriodEnd = status.cancelAtPeriodEnd; // This sets the flag
-        if (!this.hasActiveSubscription) {
-          this.apiCallsUsed = status.apiCallsUsed || 0;
-          this.apiCallsLimit = status.apiCallsLimit || 10;
-        }
-        this.isLoading = false;
-      },
-      error: (error) => {
-        console.error('Error loading subscription:', error);
         this.isLoading = false;
       }
     });
@@ -272,12 +298,17 @@ export class ProfileComponent implements OnInit, OnDestroy {
 
   async startSubscription() {
     this.isLoading = true;
-    this.stripeService.startSubscription().subscribe({
-      error: (error) => {
-        console.error('Error starting subscription:', error);
-        this.isLoading = false;
-      }
-    });
+    this.stripeService.startSubscription()
+      .pipe(
+        finalize(() => {
+          this.isLoading = false;
+        }),
+        catchError(error => {
+          console.error('Error starting subscription:', error);
+          return of(null);
+        })
+      )
+      .subscribe();
   }
 
   async cancelSubscription() {
@@ -295,18 +326,22 @@ export class ProfileComponent implements OnInit, OnDestroy {
 
     this.stripeService.cancelSubscription()
       .pipe(
+        timeout(5000), // 5 second timeout
         finalize(() => {
           this.isLoading = false;
+        }),
+        catchError(error => {
+          console.error('Error canceling subscription:', error);
+          // Show error message to user
+          return of(null);
         })
       )
       .subscribe({
-        next: () => {
-          this.hasActiveSubscription = false;
-          this.checkSubscriptionStatus();
-        },
-        error: (error) => {
-          console.error('Error canceling subscription:', error);
-          alert('Nepodařilo se zrušit předplatné');
+        next: (result) => {
+          if (result) {
+            this.hasActiveSubscription = false;
+            this.checkSubscriptionStatus();
+          }
         }
       });
   }
@@ -342,5 +377,9 @@ export class ProfileComponent implements OnInit, OnDestroy {
 
   navigateToHome() {
     this.router.navigate(['/']);
+  }
+
+  retryLoadSubscription() {
+    this.checkSubscriptionStatus();
   }
 }

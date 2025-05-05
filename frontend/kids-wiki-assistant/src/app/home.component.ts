@@ -4,10 +4,9 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { trigger, transition, style, animate } from '@angular/animations';
-import { take, timeout, takeUntil } from 'rxjs/operators';
+import { take, timeout, takeUntil, firstValueFrom, Subject } from 'rxjs';
 import { environment } from '../environments/environment';
 import { AngularFireDatabase } from '@angular/fire/compat/database';
-import { firstValueFrom, Subject } from 'rxjs';
 import { AuthService } from './services/auth.service';
 import { LanguageService, Language, LanguageOption } from './services/language.service';
 import { TranslatePipe } from './translations/translate.pipe';
@@ -57,6 +56,9 @@ export class HomeComponent implements OnInit, OnDestroy {
   showReportPopup = false;
   selectedResponseId?: number;
   reportText = '';
+
+  // Add mobile menu state property
+  showMobileMenu = false;
 
   // Define language-specific examples
   private examplesByLanguage: Record<Language, string[]> = {
@@ -342,14 +344,17 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   login() {
+    this.showMobileMenu = false;
     this.router.navigate(['/login']);
   }
 
   logout() {
+    this.showMobileMenu = false;
     this.authService.logout().subscribe();
   }
 
   navigateToProfile() {
+    this.showMobileMenu = false;
     this.router.navigate(['/profile']);
   }
 
@@ -367,20 +372,16 @@ export class HomeComponent implements OnInit, OnDestroy {
     });
   }
 
-  // Close language menu when clicking outside
-  @HostListener('document:click', ['$event'])
-  onDocumentClick(event: MouseEvent) {
-    const target = event.target as HTMLElement;
-    if (!target.closest('.language-switcher') && this.showLanguageMenu) {
-      this.showLanguageMenu = false;
-    }
-  }
-
   toggleLanguageMenu(event?: MouseEvent) {
     if (event) {
       event.stopPropagation();
     }
     this.showLanguageMenu = !this.showLanguageMenu;
+  }
+
+  // Add method to toggle mobile menu
+  toggleMobileMenu() {
+    this.showMobileMenu = !this.showMobileMenu;
   }
 
   changeLanguage(lang: Language) {

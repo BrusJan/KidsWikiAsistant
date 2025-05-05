@@ -1,11 +1,26 @@
 <!-- Top Bar -->
 <nav class="bg-[#d2d7c1] shadow">
   <div class="max-w-7xl mx-auto px-4">
-    <div class="flex justify-between h-16 items-center">
-      <div class="flex-shrink-0">
-        <!-- Logo could go here -->
-      </div>
-      <div class="flex items-center gap-4">
+    <div class="flex justify-end h-16">
+      
+      <!-- Mobile menu button -->
+      <button 
+        (click)="toggleMobileMenu()"
+        class="md:hidden h-12 my-2 inline-flex items-center justify-center p-2 rounded-md text-gray-700 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary"
+        aria-expanded="false">
+        <span class="sr-only">Open main menu</span>
+        <!-- Icon when menu is closed -->
+        <svg *ngIf="!showMobileMenu" class="block h-8 w-8" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+        <!-- Icon when menu is open -->
+        <svg *ngIf="showMobileMenu" class="block h-8 w-8" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+      
+      <!-- Desktop menu -->
+      <div class="hidden md:flex items-center gap-4">
         <!-- Show user email when logged in -->
         <span *ngIf="user$ | async as user" class="text-gray-600">
           {{ user.email }}
@@ -40,17 +55,61 @@
         <!-- Profile and Logout buttons -->
         <ng-container *ngIf="user$ | async; else loginBtn">
           <button (click)="navigateToProfile()"
-            class="px-4 py-2 text-sm font-medium text-white bg-primary rounded-md hover:bg-primary/90 transition-colors">
-            {{ 'app.profile' | translate }}
+            class="px-4 py-2 w-40 text-sm font-medium text-white bg-primary rounded-md hover:bg-primary/90 transition-colors">
+            <i class="fas fa-user mr-1"></i> {{ 'app.profile' | translate }}
           </button>
           <button (click)="logout()"
-            class="px-4 py-2 text-sm font-medium text-white bg-red-500 rounded-md hover:bg-red-600 transition-colors">
-            {{ 'app.logout' | translate }}
+            class="px-4 py-2 w-40 text-sm font-medium text-white bg-red-500 rounded-md hover:bg-red-600 transition-colors">
+            <i class="fas fa-sign-out-alt mr-1"></i> {{ 'app.logout' | translate }}
           </button>
         </ng-container>
         <ng-template #loginBtn>
           <button (click)="login()"
             class="px-4 py-2 text-sm font-medium text-white bg-primary rounded-md hover:bg-primary/90 transition-colors">
+            {{ 'app.login' | translate }}
+          </button>
+        </ng-template>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Mobile menu, show/hide based on menu state -->
+  <div class="md:hidden" [ngClass]="{'block': showMobileMenu, 'hidden': !showMobileMenu}">
+    <div class="px-2 pt-2 pb-3 space-y-2">
+      <!-- User email on mobile -->
+      <div *ngIf="user$ | async as user" class="px-3 py-2 text-sm text-gray-600 border-b border-gray-200">
+        {{ user.email }}
+      </div>
+      
+      <!-- Language switcher on mobile -->
+      <div class="px-3 py-2">
+        <div class="flex flex-wrap gap-2">
+          <button 
+            *ngFor="let lang of availableLanguages"
+            (click)="changeLanguage(lang.code)"
+            class="px-3 py-1.5 text-xs text-gray-700 bg-white rounded-md hover:bg-gray-50 transition-colors border border-gray-300"
+            [class.bg-gray-100]="isCurrentLanguage(lang.code)"
+          >
+            {{ lang.flag }} {{ lang.name }}
+          </button>
+        </div>
+      </div>
+      
+      <!-- Auth buttons on mobile -->
+      <div class="px-3 py-2 flex gap-4 items-center justify-between">
+        <ng-container *ngIf="user$ | async; else mobileLoginBtn">
+          <button (click)="navigateToProfile()"
+            class="block w-40 text-left px-4 py-2 text-sm font-medium text-white bg-primary rounded-md hover:bg-primary/90 transition-colors">
+            <i class="fas fa-user mr-1"></i> {{ 'app.profile' | translate }}
+          </button>
+          <button (click)="logout()"
+            class="block w-40 text-left px-4 py-2 text-sm font-medium text-white bg-red-500 rounded-md hover:bg-red-600 transition-colors">
+            <i class="fas fa-sign-out-alt mr-1"></i> {{ 'app.logout' | translate }}
+          </button>
+        </ng-container>
+        <ng-template #mobileLoginBtn>
+          <button (click)="login()"
+            class="block w-32 text-left px-4 py-2 text-sm font-medium text-white bg-primary rounded-md hover:bg-primary/90 transition-colors">
             {{ 'app.login' | translate }}
           </button>
         </ng-template>

@@ -36,6 +36,8 @@
   "profile.subscription.confirm_cancel.confirm": "Cancel subscription",
   "profile.subscription.checking": "Checking subscription status...",
   "profile.subscription.loading": "Loading...",
+  "profile.subscription.load_error": "Failed to load subscription status. Please try again later.",
+  "profile.subscription.retry": "Try again",
   "login.title": "Log in to the application",
   "login.register.title": "Registration",
   "login.email": "Email",

@@ -36,6 +36,8 @@
   "profile.subscription.confirm_cancel.confirm": "Abonnement kündigen",
   "profile.subscription.checking": "Abonnementstatus wird überprüft...",
   "profile.subscription.loading": "Lädt...",
+  "profile.subscription.load_error": "Der Abonnementstatus konnte nicht geladen werden. Bitte versuche es später erneut.",
+  "profile.subscription.retry": "Erneut versuchen",
   "login.title": "In die Anwendung einloggen",
   "login.register.title": "Registrierung",
   "login.email": "E-Mail",
