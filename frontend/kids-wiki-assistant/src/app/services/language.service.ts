@@ -8,7 +8,7 @@ export type Language = 'cs' | 'en' | 'es' | 'de' | 'fr' | 'it' | 'pl';
 export interface LanguageOption {
   code: Language;
   name: string;
-  flag: string;
+  flagPath: string;
 }
 
 @Injectable({
@@ -18,15 +18,15 @@ export class LanguageService {
   private currentLanguageSubject = new BehaviorSubject<Language>(this.getInitialLanguage());
   public currentLanguage$ = this.currentLanguageSubject.asObservable();
 
-  // Available languages
+  // Available languages with SVG paths
   public availableLanguages: LanguageOption[] = [
-    { code: 'cs', name: 'Čeština', flag: '🇨🇿' },
-    { code: 'en', name: 'English', flag: '🇬🇧' },
-    { code: 'es', name: 'Español', flag: '🇪🇸' },
-    { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
-    { code: 'fr', name: 'Français', flag: '🇫🇷' },
-    { code: 'it', name: 'Italiano', flag: '🇮🇹' },
-    { code: 'pl', name: 'Polski', flag: '🇵🇱' }
+    { code: 'cs', name: 'Čeština', flagPath: 'assets/flags/cz.svg' },
+    { code: 'en', name: 'English', flagPath: 'assets/flags/gb.svg' },
+    { code: 'es', name: 'Español', flagPath: 'assets/flags/es.svg' },
+    { code: 'de', name: 'Deutsch', flagPath: 'assets/flags/de.svg' },
+    { code: 'fr', name: 'Français', flagPath: 'assets/flags/fr.svg' },
+    { code: 'it', name: 'Italiano', flagPath: 'assets/flags/it.svg' },
+    { code: 'pl', name: 'Polski', flagPath: 'assets/flags/pl.svg' }
   ];
 
   private translations: Record<Language, Record<string, string>> = {
