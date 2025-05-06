@@ -198,7 +198,7 @@ export class HomeComponent implements OnInit, OnDestroy {
    */
   private updateExamplesForCurrentLanguage(): void {
     const currentLanguage = this.languageService.getCurrentLanguage();
-    this.searchExamples = this.examplesByLanguage[currentLanguage] || this.examplesByLanguage['cs'];
+    this.searchExamples = this.examplesByLanguage[currentLanguage] || this.examplesByLanguage['en'];
   }
 
   async search() {

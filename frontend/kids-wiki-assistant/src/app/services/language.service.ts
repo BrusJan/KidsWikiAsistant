@@ -116,7 +116,7 @@ export class LanguageService {
     }
     
     // Default to environment setting if no saved preference and not first visit
-    return (environment.defaultLanguage as Language) || 'cs';
+    return (environment.defaultLanguage as Language) || 'en';
   }
 
   private isValidLanguage(lang: string): lang is Language {
