@@ -161,42 +161,6 @@ export class AuthService implements OnDestroy {
     return this.userState.value !== null;
   }
 
-  /**
-   * Check if user can access premium features
-   */
-  checkUserAccess(userId: string): Observable<boolean> {
-    return this.firestore.collection('users').doc(userId).get().pipe(
-      switchMap(docSnapshot => {
-        if (!docSnapshot.exists) {
-          return of(false);
-        }
-        
-        const userData = docSnapshot.data() as any;
-        
-        // Quick check using cached data
-        if (userData.subscriptionStatus === 'premium') {
-          return of(true);
-        }
-        
-        // For free tier, check local counter
-        if (userData.subscriptionStatus === 'free' && userData.apiCallsUsed < 10) {
-          // Increment the counter
-          return from(this.firestore.collection('users').doc(userId).update({
-            apiCallsUsed: userData.apiCallsUsed + 1
-          })).pipe(
-            map(() => true)
-          );
-        }
-        
-        return of(false);
-      }),
-      catchError(error => {
-        console.error('Error checking user access:', error);
-        return of(false);
-      })
-    );
-  }
-
   getSubscriptionStatus(): Observable<UserState['subscriptionStatus']> {
     const user = this.userState.value;
     if (!user) {

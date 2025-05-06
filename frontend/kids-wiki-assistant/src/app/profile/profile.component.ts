@@ -269,18 +269,29 @@ export class ProfileComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     this.subscriptionLoadError = false;
     
+    // Create a timer for the timeout
+    const timeoutTimer = setTimeout(() => {
+      if (this.isLoading) {  // Only trigger if still loading
+        console.log('Subscription status request timed out');
+        this.subscriptionLoadError = true;
+        this.isLoading = false;
+      }
+    }, 5000);
+    
     this.stripeService.loadSubscriptionStatus().pipe(
-      timeout(5000), // 5 second timeout
       takeUntil(this.destroy$),
       catchError(error => {
         console.error('Error loading subscription:', error);
         this.subscriptionLoadError = true;
         this.isLoading = false;
-        return of(null); // Return empty observable to handle error gracefully
+        clearTimeout(timeoutTimer);  // Clear the timeout
+        return of(null);
       })
     ).subscribe({
       next: (status) => {
-        if (status) { // Only process if we got a valid response
+        clearTimeout(timeoutTimer);  // Clear the timeout on success
+        
+        if (status) {
           this.hasActiveSubscription = status.subscription === 'premium';
           if (status.currentPeriodEnd) {
             this.subscriptionEndsAt = new Date(status.currentPeriodEnd);

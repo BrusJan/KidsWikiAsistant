@@ -10,7 +10,6 @@ class AuthController {
       const newUser = {
         email,
         createdAt: new Date().toISOString(),
-        subscriptionStatus: 'free',
         apiCallsUsed: 0,
         apiCallsLimit: 10,
         totalSearchQueries: 0
