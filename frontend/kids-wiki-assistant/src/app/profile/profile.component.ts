@@ -169,13 +169,14 @@ import { LanguageService } from '../services/language.service';
                     <button
                       *ngIf="!hasActiveSubscription || (hasActiveSubscription && cancelAtPeriodEnd)"
                       (click)="startSubscription()"
-                      [disabled]="isLoading"
+                      [disabled]="true"
                       class="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed">
                       <span *ngIf="!isLoading">
                         {{ (hasActiveSubscription && cancelAtPeriodEnd ? 'profile.subscription.reactivate' : 'profile.subscription.activate') | translate }}
                       </span>
                       <span *ngIf="isLoading">Načítání...</span>
                     </button>
+                    <span class="ml-3 text-gray-600">Unlimited tier disabled</span>
 
                     <!-- Cancel Subscription -->
                     <button
