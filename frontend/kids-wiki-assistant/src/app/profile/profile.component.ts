@@ -165,7 +165,7 @@ import { LanguageService } from '../services/language.service';
                       </div>
                     </div>
                     
-                    <!-- Subscribe/Reactivate Button -->
+                    <!-- Subscribe/Reactivate Button 
                     <button
                       *ngIf="!hasActiveSubscription || (hasActiveSubscription && cancelAtPeriodEnd)"
                       (click)="startSubscription()"
@@ -176,16 +176,17 @@ import { LanguageService } from '../services/language.service';
                       </span>
                       <span *ngIf="isLoading">Načítání...</span>
                     </button>
-                    <span class="ml-3 text-gray-600">Unlimited tier disabled</span>
+                    
 
-                    <!-- Cancel Subscription -->
+                     Cancel Subscription
                     <button
                       *ngIf="hasActiveSubscription && !cancelAtPeriodEnd"
                       (click)="cancelSubscription()"
                       [disabled]="isLoading"
                       class="mt-4 inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed">
                       {{ (isLoading ? 'profile.subscription.canceling' : 'profile.subscription.cancel') | translate }}
-                    </button>
+                    </button>-->
+                    <span class="ml-3 text-gray-600">Unlimited tier disabled. <a href="https://blog.vikitorek.com/blog/unlimited-disabled/">Read more</a>.</span>
                   </ng-container>
                 </div>
               </div>
