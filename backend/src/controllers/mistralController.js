@@ -4,24 +4,37 @@ const config = require('../config/config');
 const getMistralResponse = async (req, res) => {
   try {
     const { prompt } = req.body;
-    
-    const response = await axios.post(config.MISTRAL_API_URL, {
-      model: "mistral-large-latest",
+    const model = req.body.model || "google/gemma-3-27b-it:free"; // Default to Gemma 2 27B Instruct (free)
+
+    const headers = {
+      'Authorization': `Bearer ${config.OPENROUTER_API_KEY}`,
+      'Content-Type': 'application/json',
+    };
+    // Add recommended headers if configured
+    if (config.OPENROUTER_SITE_URL) {
+      headers['HTTP-Referer'] = config.OPENROUTER_SITE_URL;
+    }
+    if (config.OPENROUTER_SITE_NAME) {
+      headers['X-Title'] = config.OPENROUTER_SITE_NAME;
+    }
+
+    const response = await axios.post(config.OPENROUTER_API_URL, {
+      model: model,
       messages: [
         { role: "user", content: prompt }
       ],
       max_tokens: 500
     }, {
-      headers: {
-        'Authorization': `Bearer ${config.MISTRAL_API_KEY}`,
-        'Content-Type': 'application/json'
-      }
+      headers: headers
     });
 
     res.json(response.data);
   } catch (error) {
-    console.error('Error calling Mistral API:', error);
-    res.status(500).json({ error: 'Failed to get response from Mistral' });
+    console.error('Error calling OpenRouter API:', error.response ? error.response.data : error.message);
+    res.status(error.response ? error.response.status : 500).json({ 
+      error: 'Failed to get response from OpenRouter AI',
+      details: error.response ? error.response.data : null
+    });
   }
 };
 
