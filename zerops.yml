@@ -10,7 +10,6 @@ zerops:
       buildCommands:
         - cd backend
         - npm i
-        - npm run build
 
       # select which files / folders to deploy
       # after the build successfully finished
