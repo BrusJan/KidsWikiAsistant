@@ -8,13 +8,14 @@ zerops:
 
       # what commands to use to build your app
       buildCommands:
-        - cd backend
-        - npm i
+        - ls -la
+        - cd backend && npm i
 
       # select which files / folders to deploy
       # after the build successfully finished
       deployFiles:
         - backend/src
+        - backend/.env
         - backend/package.json
         - backend/node_modules
 
