@@ -15,7 +15,6 @@ zerops:
       # after the build successfully finished
       deployFiles:
         - backend/src
-        - backend/.env
         - backend/package.json
         - backend/node_modules
 
