@@ -6,11 +6,10 @@ zerops:
       # container be based on (can be an array)
       base: nodejs@22
 
-      prepareCommands:
-        - cd backend
       # what commands to use to build your app
       buildCommands:
-        - npm i --verbose
+        - ls -la
+        - cd backend && npm i
 
       # select which files / folders to deploy
       # after the build successfully finished
