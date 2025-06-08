@@ -14,9 +14,7 @@ zerops:
       # select which files / folders to deploy
       # after the build successfully finished
       deployFiles:
-        - backend/src
-        - backend/package.json
-        - backend/node_modules
+        - backend/~
 
       # *optional*: which files / folders
       # to cache for the next build run
@@ -37,4 +35,4 @@ zerops:
           httpSupport: true
 
       # how to start your application
-      start: cd backend && node src/app.js
+      start: node src/app.js
