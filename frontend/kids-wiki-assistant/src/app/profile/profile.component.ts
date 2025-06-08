@@ -165,7 +165,7 @@ import { LanguageService } from '../services/language.service';
                       </div>
                     </div>
                     
-                    <!-- Subscribe/Reactivate Button 
+                    Subscribe/Reactivate Button 
                     <button
                       *ngIf="!hasActiveSubscription || (hasActiveSubscription && cancelAtPeriodEnd)"
                       (click)="startSubscription()"
@@ -185,8 +185,7 @@ import { LanguageService } from '../services/language.service';
                       [disabled]="isLoading"
                       class="mt-4 inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed">
                       {{ (isLoading ? 'profile.subscription.canceling' : 'profile.subscription.cancel') | translate }}
-                    </button>-->
-                    <span class="ml-3 text-gray-600">Unlimited tier disabled. <a href="https://blog.vikitorek.com/blog/unlimited-disabled/">Read more</a>.</span>
+                    </button>
                   </ng-container>
                 </div>
               </div>
@@ -270,7 +269,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
   private checkSubscriptionStatus() {
     this.isLoading = true;
     this.subscriptionLoadError = false;
-    
+
     // Create a timer for the timeout
     const timeoutTimer = setTimeout(() => {
       if (this.isLoading) {  // Only trigger if still loading
@@ -279,7 +278,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
         this.isLoading = false;
       }
     }, 5000);
-    
+
     this.stripeService.loadSubscriptionStatus().pipe(
       takeUntil(this.destroy$),
       catchError(error => {
@@ -292,7 +291,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
     ).subscribe({
       next: (status) => {
         clearTimeout(timeoutTimer);  // Clear the timeout on success
-        
+
         if (status) {
           this.hasActiveSubscription = status.subscription === 'premium';
           if (status.currentPeriodEnd) {
