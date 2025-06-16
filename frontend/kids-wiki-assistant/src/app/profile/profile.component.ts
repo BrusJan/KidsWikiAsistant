@@ -4,8 +4,8 @@ import { Router } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { animate, state, style, transition, trigger } from '@angular/animations';
 import { AuthService } from '../services/auth.service';
-import { Subject, BehaviorSubject, of, throwError } from 'rxjs';
-import { finalize, takeUntil, catchError, timeout, timeoutWith } from 'rxjs/operators';
+import { Subject, BehaviorSubject, of } from 'rxjs';
+import { finalize, takeUntil, catchError, timeout, delay, retry, retryWhen, tap } from 'rxjs/operators';
 import { StripeService } from '../services/stripe.service';
 import { RouterModule } from '@angular/router';
 import { TranslatePipe } from '../translations/translate.pipe';
@@ -258,6 +258,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    // Try to load subscription status with retry logic for new users
     this.checkSubscriptionStatus();
   }
 

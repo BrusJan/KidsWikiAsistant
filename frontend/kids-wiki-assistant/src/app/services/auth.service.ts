@@ -85,7 +85,10 @@ export class AuthService implements OnDestroy {
 
   private fetchUserData(userId: string): void {
     this.http.get<UserState>(`${this.apiUrl}/user/${userId}`).subscribe({
-      next: (userData) => this.userState.next(userData),
+      next: (userData) => {
+        console.log('Fetched user data:', userData);
+        this.userState.next(userData);
+      },
       error: (error) => console.error('Error fetching user data:', error)
     });
   }
@@ -94,18 +97,43 @@ export class AuthService implements OnDestroy {
    * Register a new user
    */
   registerUser(email: string, password: string): Observable<string> {
-    return from(this.afAuth.createUserWithEmailAndPassword(email, password)).pipe(
-      switchMap(credential => {
-        if (!credential.user) {
-          throw new Error('Registration failed');
-        }
-        // Create user in backend
-        return this.http.post<{userId: string}>(`${this.apiUrl}/create-user`, {
-          userId: credential.user.uid,
-          email: email
-        });
+    // Use backend endpoint for complete registration
+    return this.http.post<UserState>(`${this.apiUrl}/register`, {
+      email,
+      password
+    }).pipe(
+      tap(userData => {
+        // Set user state from complete response
+        this.userState.next(userData);
+        
+        // Sign in the user automatically
+        return from(this.afAuth.signInWithEmailAndPassword(email, password));
       }),
-      map(response => response.userId)
+      catchError(error => {
+        console.error('Registration failed:', error);
+        throw error;
+      }),
+      map(userData => userData.uid)
+    );
+  }
+
+  /**
+   * Refresh user data from backend
+   */
+  refreshUserData(): Observable<UserState | null> {
+    const currentUser = this.userState.value;
+    if (!currentUser) {
+      return of(null);
+    }
+
+    return this.http.get<UserState>(`${this.apiUrl}/user/${currentUser.uid}`).pipe(
+      tap(userData => {
+        this.userState.next(userData);
+      }),
+      catchError(error => {
+        console.error('Error refreshing user data:', error);
+        return of(currentUser); // Return existing user state on error
+      })
     );
   }
 

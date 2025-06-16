@@ -4,6 +4,55 @@ const firebaseAdmin = require('../config/firebase');
 const SUBSCRIPTION_PRICE_ID = process.env.STRIPE_PRICE_ID;
 
 class AuthController {
+  // New method to handle complete user registration
+  async registerUser(req, res) {
+    const { email, password } = req.body;
+    
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email and password are required' });
+    }
+    
+    try {
+      // 1. Create the user in Firebase Authentication
+      const userRecord = await firebaseAdmin.auth().createUser({
+        email,
+        password,
+        emailVerified: false
+      });
+      
+      const userId = userRecord.uid;
+      console.log(`User registered: ${userId} (${email})`);
+      
+      // 2. Create user record in Firestore
+      const newUser = {
+        email,
+        createdAt: new Date().toISOString(),
+        apiCallsUsed: 0,
+        apiCallsLimit: 10,
+        totalSearchQueries: 0
+      };
+      
+      await firebaseAdmin.firestore().collection('users').doc(userId).set(newUser);
+      
+      // 3. Return complete user data to frontend
+      return res.status(201).json({
+        userId,
+        email,
+        apiCallsUsed: 0,
+        apiCallsLimit: 10,
+        totalSearchQueries: 0,
+        createdAt: newUser.createdAt,
+        subscriptionStatus: 'free'
+      });
+    } catch (error) {
+      console.error(`Registration failed for ${email}: ${error.message}`);
+      return res.status(500).json({
+        error: 'Failed to register user',
+        details: error.message
+      });
+    }
+  }
+
   async createUser(req, res) {
     const { userId, email } = req.body;
     try {
@@ -84,7 +133,6 @@ class AuthController {
 
       // If user doesn't have a Stripe customer ID yet, create one
       if (!stripeCustomerId) {
-        console.log(`Creating new Stripe customer for user ${userId}`);
         const customer = await stripe.customers.create({
           email: email || userData.email,
           metadata: { firebaseUserId: userId }
@@ -97,15 +145,13 @@ class AuthController {
           stripeCustomerId: stripeCustomerId
         });
         
-        console.log(`Created Stripe customer: ${stripeCustomerId} for user ${userId}`);
+        console.log(`Stripe customer created for user ${userId}: ${stripeCustomerId}`);
       }
 
       // Fix URL formatting by ensuring no double slashes or protocols
-      const frontendUrl = process.env.FRONTEND_URL.replace(/^https?:\/\/+/, 'https://').replace(/\/+$/, ''); // Remove trailing slashes
+      const frontendUrl = process.env.FRONTEND_URL.replace(/^https?:\/\/+/, 'https://').replace(/\/+$/, '');
       const successUrl = `${frontendUrl}/payment/success?session_id={CHECKOUT_SESSION_ID}`;
       const cancelUrl = `${frontendUrl}/profile`;
-
-      console.log(`Using success URL: ${successUrl}`); // Debug log
 
       // Now create the checkout session with the customer ID
       const session = await stripe.checkout.sessions.create({
@@ -128,7 +174,7 @@ class AuthController {
 
       return res.json({ url: session.url });
     } catch (error) {
-      console.error('Error creating checkout session:', error);
+      console.error(`Failed to create checkout session for user ${userId}: ${error.message}`);
       return res.status(500).json({ error: 'Failed to create checkout session' });
     }
   }
@@ -197,11 +243,7 @@ class AuthController {
         { cancel_at_period_end: true }
       );
 
-      console.log('Subscription canceled:', {
-        id: canceledSubscription.id,
-        status: canceledSubscription.status,
-        cancelAt: canceledSubscription.cancel_at
-      });
+      console.log(`Subscription ${canceledSubscription.id} canceled for user ${userId}`);
 
       res.json({
         success: true,
@@ -209,7 +251,7 @@ class AuthController {
       });
 
     } catch (error) {
-      console.error('Error canceling subscription:', error);
+      console.error(`Failed to cancel subscription for user ${userId}: ${error.message}`);
       res.status(500).json({
         error: 'Failed to cancel subscription',
         details: error.message
@@ -240,7 +282,6 @@ class AuthController {
       const userDoc = await firebaseAdmin.firestore().collection('users').doc(userId).get();
       
       if (!userDoc.exists) {
-        console.log(`User ${userId} not found`);
         return res.status(404).json({ error: 'User not found' });
       }
 
@@ -256,7 +297,7 @@ class AuthController {
 
       return res.json(response);
     } catch (error) {
-      console.error('Error fetching user data:', error);
+      console.error(`Failed to fetch user data for ${userId}: ${error.message}`);
       return res.status(500).json({
         error: 'Failed to fetch user data',
         details: error.message

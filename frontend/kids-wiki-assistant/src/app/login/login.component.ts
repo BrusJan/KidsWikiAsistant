@@ -78,7 +78,14 @@ import { LanguageService } from '../services/language.service';
 
           <div>
             <button type="submit" 
-                    class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                    [disabled]="isLoading"
+                    class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-70 disabled:cursor-not-allowed">
+              <span *ngIf="isLoading" class="absolute left-0 inset-y-0 flex items-center pl-3">
+                <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              </span>
               {{ (isRegistering ? 'login.register.button' : 'login.button') | translate }}
             </button>
           </div>
@@ -95,19 +102,6 @@ import { LanguageService } from '../services/language.service';
             </button>
           </div>
         </form>
-<!-- 
-        <div class="relative my-4" *ngIf="!(user$ | async)">
-          <div class="absolute inset-0 flex items-center">
-            <div class="w-full border-t border-gray-300"></div>
-          </div>
-          <div class="relative flex justify-center text-sm">
-            <span class="px-2 bg-white text-gray-500">
-              {{ 'login.or' | translate }}
-            </span>
-          </div>
-        </div>
-
-        <firebase-ui></firebase-ui> -->
       </div>
     </div>
   `,
@@ -122,6 +116,7 @@ export class LoginComponent {
   resetPasswordMessage = '';
   resetPasswordError = false;
   termsAgreed = false;
+  isLoading = false; // Add loading state
 
   constructor(
     private router: Router,
@@ -130,18 +125,31 @@ export class LoginComponent {
   ) { }
 
   async emailLogin() {
+    if (this.isLoading) return;
+
+    this.isLoading = true;
+    this.error = '';
+
     try {
       await this.authService.loginUser(this.email, this.password).toPromise();
     } catch (error: any) {
       this.error = this.languageService.translate('login.error.invalid_credentials');
       console.error('Login error:', error);
+    } finally {
+      this.isLoading = false;
     }
   }
 
   async register() {
+    if (this.isLoading) return;
+
+    this.isLoading = true;
+    this.error = '';
+
     try {
       if (!this.termsAgreed) {
         this.error = this.languageService.translate('login.error.terms_required');
+        this.isLoading = false;
         return;
       }
 
@@ -165,6 +173,8 @@ export class LoginComponent {
       }
       else this.error = 'Registrace se nezdařila';
       console.error('Registration error:', error);
+    } finally {
+      this.isLoading = false;
     }
   }
 
@@ -180,22 +190,6 @@ export class LoginComponent {
     if (!this.email) {
       this.resetPasswordError = true;
       this.resetPasswordMessage = 'Zadejte prosím email';
-      return;
-    }
-
-    this.isResettingPassword = true;
-    this.resetPasswordMessage = '';
-    this.resetPasswordError = false;
-
-    try {
-      await this.authService.requestPasswordReset(this.email);
-      this.resetPasswordMessage = 'Email pro reset hesla byl odeslán';
-      this.resetPasswordError = false;
-    } catch (error: any) {
-      this.resetPasswordError = true;
-      this.resetPasswordMessage = 'Chyba při odesílání emailu: ' + (error.message || 'Neznámá chyba');
-    } finally {
-      this.isResettingPassword = false;
     }
   }
 }

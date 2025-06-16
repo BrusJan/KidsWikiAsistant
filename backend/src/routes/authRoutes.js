@@ -8,5 +8,6 @@ router.get('/subscription/status', authController.getSubscriptionStatus.bind(aut
 router.post('/subscription/cancel', authController.cancelSubscription.bind(authController));
 router.post('/subscription/verify-session', authController.verifySession.bind(authController));
 router.get('/user/:userId', authController.getUserData.bind(authController));
+router.post('/register', authController.registerUser.bind(authController));
 
 module.exports = router;
