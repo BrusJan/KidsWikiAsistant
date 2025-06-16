@@ -105,7 +105,7 @@ class AuthController {
         cancelAtPeriodEnd: false
       };
     } catch (error) {
-      console.error('Error checking Stripe subscription:', error);
+      console.error('Error checking Stripe subscription:', error?.raw?.message || error.message);
       return { 
         subscription: 'free',
         cancelAtPeriodEnd: false

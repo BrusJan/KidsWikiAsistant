@@ -62,6 +62,7 @@ const search = async (req, res) => {
     // Get Wikipedia API URL based on the language parameter
     const wikipediaApiUrl = `https://${lang}.wikipedia.org/w/api.php`;
     
+    console.log(`Searching ${lang} Wikipedia for: ${query}`);
     // First API call - search for articles
     const searchResponse = await axios.get(wikipediaApiUrl, {
       params: {
