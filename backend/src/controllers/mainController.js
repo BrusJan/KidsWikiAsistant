@@ -12,16 +12,10 @@ const getKidsFriendlySummary = async (req, res) => {
           query: { 
             query: req.query.query,
             userId: req.query.userId,
-            language: language // Pass the language parameter
+            language: language 
           }
         };
         
-        console.log('Received request with:', {
-          query: req.query.query,
-          userId: req.query.userId,
-          language: language
-        });
-
         const wikiRes = {
             json: function(data) {
                 this.data = data;
@@ -37,7 +31,6 @@ const getKidsFriendlySummary = async (req, res) => {
 
         // Get Wikipedia article and properly handle response
         await wikiController.search(wikiReq, wikiRes);
-        console.log('Wiki Response:', wikiRes.data);
 
         // Check if there's an error code from Wiki controller
         if (wikiRes.data && wikiRes.data.errorCode) {
@@ -46,7 +39,7 @@ const getKidsFriendlySummary = async (req, res) => {
         }
 
         if (!wikiRes.data || !wikiRes.data.content) {
-            console.log('No wiki content found, falling back to Mistral AI');
+            console.log(`No wiki content found for: ${req.query.query}, using AI fallback`);
             
             // For now, we'll still use config.LANGUAGE for Mistral prompts
             // This will be updated in a future implementation
@@ -152,7 +145,6 @@ const getKidsFriendlySummary = async (req, res) => {
 
         // Get Mistral response
         await mistralController.getMistralResponse(mistralReq, mistralRes);
-        console.log('Mistral Response:', mistralRes.data);
 
         // Return the combined result
         res.json({
@@ -163,9 +155,9 @@ const getKidsFriendlySummary = async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Error in getKidsFriendlySummary:', error);
+        console.error(`Summary generation failed for "${req.query.query}": ${error.message}`);
         res.status(500).json({ 
-            errorCode: 'summary_generation_failed'  // Changed from ERROR_SUMMARY_GENERATION_FAILED
+            errorCode: 'summary_generation_failed'
         });
     }
 };

@@ -26,7 +26,7 @@ Issue Description: ${text}`,
     await transporter.sendMail(mailOptions);
     res.json({ message: 'Report submitted successfully' });
   } catch (error) {
-    console.error('Error sending report:', error);
+    console.error(`Report submission failed: ${error.message}`);
     res.status(500).json({ error: 'Failed to submit report' });
   }
 };

@@ -30,10 +30,9 @@ const getMistralResponse = async (req, res) => {
 
     res.json(response.data);
   } catch (error) {
-    console.error('Error calling OpenRouter API:', error.response ? error.response.data : error.message);
+    console.error(`AI API error: ${error.message}`);
     res.status(error.response ? error.response.status : 500).json({ 
-      error: 'Failed to get response from OpenRouter AI',
-      details: error.response ? error.response.data : null
+      error: 'Failed to get response from OpenRouter AI'
     });
   }
 };
