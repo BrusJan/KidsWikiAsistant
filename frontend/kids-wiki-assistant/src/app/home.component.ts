@@ -338,7 +338,8 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.http.post(`${environment.apiUrl}/api/main/report`, {
       responseId: this.selectedResponseId,
       query: response.query,
-      text: this.reportText
+      text: this.reportText,
+      responseText: response.kidsFriendlySummary,
     }).subscribe({
       next: () => {
         console.log('Report submitted successfully');

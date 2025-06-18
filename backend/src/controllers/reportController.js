@@ -21,16 +21,17 @@ const transporter = nodemailer.createTransport({
 
 const submitReport = async (req, res) => {
   try {
-    const { responseId, query, text } = req.body;
+    const { responseId, query, text, responseText } = req.body;
 
     const mailOptions = {
-      from: config.EMAIL_USER,
-      to: config.REPORT_EMAIL,
+      from: 'no-reply@vikitorek.com',
+      to: config.SUPPORT_EMAIL,
       subject: `Wiki Assistant Report - Response ${responseId}`,
       text: `Report Details:
 Query: ${query}
 Response ID: ${responseId}
-Issue Description: ${text}`,
+Issue Description: ${text}
+Response Text: ${responseText || 'N/A'}`,
     };
 
     await transporter.sendMail(mailOptions);

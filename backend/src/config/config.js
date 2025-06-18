@@ -7,7 +7,7 @@ const config = {
     OPENROUTER_SITE_NAME: process.env.OPENROUTER_SITE_NAME,
     EMAIL_USER: process.env.EMAIL_USER,
     EMAIL_PASS: process.env.EMAIL_PASS,
-    REPORT_EMAIL: 'jb.fxtrade@gmail.com',
+    SUPPORT_EMAIL: process.env.SUPPORT_EMAIL,
 };
 
 module.exports = config;
