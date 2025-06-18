@@ -24,28 +24,29 @@ interface StoredResponses {
     url: string;          // Wikipedia URL
     originalTitle?: string; // Original Wikipedia article title
     imageUrl?: string;    // Optional image URL if available
+    reported?: boolean;   // Flag to track if response has been reported
   }>;
 }
 
 @Component({
-    selector: 'app-home',
-    standalone: true,
-    templateUrl: './home.component.html',
-    styleUrls: ['./home.component.scss'],
-    imports: [
-        CommonModule,
-        FormsModule,
-        RouterModule,
-        TranslatePipe
-    ],
-    animations: [
-        trigger('fadeIn', [
-            transition(':enter', [
-                style({ opacity: 0, transform: 'scale(0.95)' }),
-                animate('150ms ease-out', style({ opacity: 1, transform: 'scale(1)' })),
-            ]),
-        ]),
-    ]
+  selector: 'app-home',
+  standalone: true,
+  templateUrl: './home.component.html',
+  styleUrls: ['./home.component.scss'],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    TranslatePipe
+  ],
+  animations: [
+    trigger('fadeIn', [
+      transition(':enter', [
+        style({ opacity: 0, transform: 'scale(0.95)' }),
+        animate('150ms ease-out', style({ opacity: 1, transform: 'scale(1)' })),
+      ]),
+    ]),
+  ]
 })
 export class HomeComponent implements OnInit, OnDestroy {
   @ViewChild('searchInput') searchInput!: ElementRef;
@@ -134,10 +135,10 @@ export class HomeComponent implements OnInit, OnDestroy {
     // Initialize anonymous ID and queries reference in constructor
     this.anonymousId = localStorage.getItem('anonymousId') || this.generateAnonymousId();
     this.queriesRef = this.db.object(`queries/${this.anonymousId}`);
-    
+
     // Update examples when language changes
     this.updateExamplesForCurrentLanguage();
-    
+
     // Subscribe to language changes
     this.languageService.currentLanguage$.pipe(
       takeUntil(this.destroy$)
@@ -209,19 +210,19 @@ export class HomeComponent implements OnInit, OnDestroy {
   private async performSearch() {
     this.isLoading = true;
     this.showLimitExceededWarning = false;
-    
+
     const user = await firstValueFrom(this.authService.user$);
     if (!user) {
       alert('Pro tuto akci musíte být přihlášen.');
       this.router.navigate(['/login']);
       return;
     }
-    
+
     // Get current language from language service
     const currentLanguage = this.languageService.getCurrentLanguage();
-    
+
     console.log('Searching with userId:', user.uid, 'language:', currentLanguage);
-    
+
     this.http.get(`${environment.apiUrl}/api/main/kids-summary`, {
       params: {
         query: this.searchQuery,
@@ -269,22 +270,22 @@ export class HomeComponent implements OnInit, OnDestroy {
     const rawErrorCode = response.errorCode || '';
     const errorCode = rawErrorCode.toLowerCase().replace(/^error_/, '');
     const translationKey = `error.${errorCode}`;
-    
+
     console.log('Original errorCode:', rawErrorCode, 'Normalized:', errorCode, 'Translation key:', translationKey);
-    
+
     // Check if this is the limit exceeded error
     if (errorCode === 'limit_exceeded') {
       this.showLimitExceededWarning = true;
       return;
     }
-    
+
     // Handle article not found special case with query parameter
     if (errorCode === 'article_not_found' && response.query) {
       const errorMessage = this.languageService.translate(translationKey, { query: response.query });
       this.showErrorResponse(errorMessage);
       return;
     }
-    
+
     // Handle general case
     const errorMessage = this.languageService.translate(translationKey);
     this.showErrorResponse(errorMessage);
@@ -328,6 +329,12 @@ export class HomeComponent implements OnInit, OnDestroy {
     const response = this.responses.find(r => r.id === this.selectedResponseId);
     if (!response) return;
 
+    // Mark response as reported
+    if (response) {
+      response.reported = true;
+      this.saveToLocalStorage();
+    }
+
     this.http.post(`${environment.apiUrl}/api/main/report`, {
       responseId: this.selectedResponseId,
       query: response.query,
@@ -367,7 +374,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       const allResponses: StoredResponses = saved ? JSON.parse(saved) : {};
       // Save responses using Firebase uid
       allResponses[user.uid] = this.responses;
-      
+
       localStorage.setItem('wikiResponses', JSON.stringify(allResponses));
     });
   }
@@ -391,7 +398,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   getCurrentLanguage(): LanguageOption {
     const currentCode = this.languageService.getCurrentLanguage();
-    return this.availableLanguages.find(lang => lang.code === currentCode) 
+    return this.availableLanguages.find(lang => lang.code === currentCode)
       || this.availableLanguages[0];
   }
 

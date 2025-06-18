@@ -6,6 +6,8 @@ const getKidsFriendlySummary = async (req, res) => {
     try {
         // Get the language from the request or use default
         const language = req.query.language || config.LANGUAGE;
+        // Get age parameter with a default of 6 if not provided
+        const age = parseInt(req.query.age) || 6;
         
         // Create mock request/response for wikiController
         const wikiReq = { 
@@ -41,23 +43,22 @@ const getKidsFriendlySummary = async (req, res) => {
         if (!wikiRes.data || !wikiRes.data.content) {
             console.log(`No wiki content found for: ${req.query.query}, using AI fallback`);
             
-            // For now, we'll still use config.LANGUAGE for Mistral prompts
-            // This will be updated in a future implementation
+            // Update prompts to include dynamic age
             let mistralPrompt;
             if (language === 'cs') {
-                mistralPrompt = `Napiš krátký odstavec tak aby to pochopilo šestileté dítě na toto téma: ${req.query.query}`;
+                mistralPrompt = `Napiš krátký odstavec tak aby to pochopilo ${age}leté dítě na toto téma: ${req.query.query}`;
             } else if (language === 'es') {
-                mistralPrompt = `Escribe un párrafo corto que un niño de seis años pueda entender sobre este tema: ${req.query.query}`;
+                mistralPrompt = `Escribe un párrafo corto que un niño de ${age} años pueda entender sobre este tema: ${req.query.query}`;
             } else if (language === 'de') {
-                mistralPrompt = `Schreibe einen kurzen Absatz, den ein sechsjähriges Kind über dieses Thema verstehen kann: ${req.query.query}`;
+                mistralPrompt = `Schreibe einen kurzen Absatz, den ein ${age}-jähriges Kind über dieses Thema verstehen kann: ${req.query.query}`;
             } else if (language === 'fr') {
-                mistralPrompt = `Écris un court paragraphe qu'un enfant de six ans pourrait comprendre sur ce sujet : ${req.query.query}`;
+                mistralPrompt = `Écris un court paragraphe qu'un enfant de ${age} ans pourrait comprendre sur ce sujet : ${req.query.query}`;
             } else if (language === 'it') {
-                mistralPrompt = `Scrivi un breve paragrafo che un bambino di sei anni possa comprendere su questo argomento: ${req.query.query}`;
+                mistralPrompt = `Scrivi un breve paragrafo che un bambino di ${age} anni possa comprendere su questo argomento: ${req.query.query}`;
             } else if (language === 'pl') {
-                mistralPrompt = `Napisz krótki akapit na ten temat, który zrozumie sześcioletnie dziecko: ${req.query.query}`;
+                mistralPrompt = `Napisz krótki akapit na ten temat, który zrozumie ${age}-letnie dziecko: ${req.query.query}`;
             } else {
-                mistralPrompt = `Write a short paragraph that a six-year-old child could understand about this topic: ${req.query.query}`;
+                mistralPrompt = `Write a short paragraph that a ${age}-year-old child could understand about this topic: ${req.query.query}`;
             }
             
             // Create direct prompt for Mistral when no wiki article found
@@ -103,26 +104,27 @@ const getKidsFriendlySummary = async (req, res) => {
                 originalTitle: req.query.query,
                 kidsFriendlySummary: prefix + mistralRes.data.choices[0].message.content,
                 wikiUrl: '',
-                language: language // Include the language in the response
+                language: language, // Include the language in the response
+                age: age // Include the age in the response
             });
         }
 
-        // Create language-appropriate prompt for Mistral
+        // Create language-appropriate prompt for Mistral with dynamic age
         let mistralPrompt;
         if (language === 'cs') {
-            mistralPrompt = `Vytvoř krátký odstavec nebo větu s použitím těchto faktů tak aby text pochopilo šestileté dítě: ${wikiRes.data.content}`;
+            mistralPrompt = `Vytvoř krátký odstavec nebo větu s použitím těchto faktů tak aby text pochopilo ${age}leté dítě: ${wikiRes.data.content}`;
         } else if (language === 'es') {
-            mistralPrompt = `Crea un párrafo corto o una frase utilizando estos hechos de una manera que un niño de seis años pueda entender: ${wikiRes.data.content}`;
+            mistralPrompt = `Crea un párrafo corto o una frase utilizando estos hechos de una manera que un niño de ${age} años pueda entender: ${wikiRes.data.content}`;
         } else if (language === 'de') {
-            mistralPrompt = `Erstelle einen kurzen Absatz oder Satz mit diesen Fakten auf eine Weise, die ein sechsjähriges Kind verstehen würde: ${wikiRes.data.content}`;
+            mistralPrompt = `Erstelle einen kurzen Absatz oder Satz mit diesen Fakten auf eine Weise, die ein ${age}-jähriges Kind verstehen würde: ${wikiRes.data.content}`;
         } else if (language === 'fr') {
-            mistralPrompt = `Crée un court paragraphe ou une phrase en utilisant ces faits d'une manière qu'un enfant de six ans pourrait comprendre : ${wikiRes.data.content}`;
+            mistralPrompt = `Crée un court paragraphe ou une phrase en utilisant ces faits d'une manière qu'un enfant de ${age} ans pourrait comprendre : ${wikiRes.data.content}`;
         } else if (language === 'it') {
-            mistralPrompt = `Crea un breve paragrafo o una frase utilizzando questi fatti in modo che un bambino di sei anni possa capire: ${wikiRes.data.content}`;
+            mistralPrompt = `Crea un breve paragrafo o una frase utilizzando questi fatti in modo che un bambino di ${age} anni possa capire: ${wikiRes.data.content}`;
         } else if (language === 'pl') {
-            mistralPrompt = `Stwórz krótki akapit lub zdanie wykorzystując te fakty w sposób, który zrozumie sześcioletnie dziecko: ${wikiRes.data.content}`;
+            mistralPrompt = `Stwórz krótki akapit lub zdanie wykorzystując te fakty w sposób, który zrozumie ${age}-letnie dziecko: ${wikiRes.data.content}`;
         } else {
-            mistralPrompt = `Create a short paragraph or sentence using these facts in a way a six-year-old child would understand: ${wikiRes.data.content}`;
+            mistralPrompt = `Create a short paragraph or sentence using these facts in a way a ${age}-year-old child would understand: ${wikiRes.data.content}`;
         }
         
         const mistralReq = {
@@ -151,7 +153,8 @@ const getKidsFriendlySummary = async (req, res) => {
             originalTitle: wikiRes.data.title,
             kidsFriendlySummary: mistralRes.data.choices[0].message.content,
             wikiUrl: wikiRes.data.url,
-            language: language // Include the language in the response
+            language: language, // Include the language in the response
+            age: age // Include the age in the response
         });
 
     } catch (error) {
