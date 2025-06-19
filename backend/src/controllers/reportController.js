@@ -1,47 +1,52 @@
-const nodemailer = require('nodemailer');
-const config = require('../config/config');
+const firebaseAdmin = require('../config/firebase');
 
-// Determine if we're in development mode
-const isDevelopment = process.env.NODE_ENV !== 'prod';
-
-// Configure transporter with appropriate options for development vs production
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: config.EMAIL_USER,
-    pass: config.EMAIL_PASS
-  },
-  // Add this for local development to bypass certificate validation
-  ...(isDevelopment && {
-    tls: {
-      rejectUnauthorized: false
-    }
-  })
-});
+// Create a reference to the Firestore database
+const db = firebaseAdmin.firestore();
 
 const submitReport = async (req, res) => {
-  try {
-    const { responseId, query, text, responseText } = req.body;
+  // Respond immediately to avoid timeout
+  res.json({ message: 'Report received. Processing in background.' });
 
-    const mailOptions = {
-      from: 'no-reply@vikitorek.com',
-      to: config.SUPPORT_EMAIL,
-      subject: `Wiki Assistant Report - Response ${responseId}`,
-      text: `Report Details:
-Query: ${query}
-Response ID: ${responseId}
-Issue Description: ${text}
-Response Text: ${responseText || 'N/A'}`,
+  try {
+    const { responseId, query, text, responseText, userEmail } = req.body;
+    console.log(`Processing report for response: ${responseId}, from user: ${userEmail || 'N/A'}`);
+
+    // Create the report document in Firestore
+    const reportData = {
+      responseId,
+      query,
+      description: text,
+      responseText: responseText || 'N/A',
+      reporterEmail: userEmail || 'anonymous@user.com',
+      status: 'new', // Initial status
+      createdAt: new Date().toISOString(),
     };
 
-    await transporter.sendMail(mailOptions);
-    console.log(`Report submitted for response: ${responseId}`);
-    res.json({ message: 'Report submitted successfully' });
+    // Save to Firestore in background
+    saveReportToFirestore(reportData);
   } catch (error) {
-    console.error(`Report submission failed: ${error.message}`);
-    res.status(500).json({ error: 'Failed to submit report' });
+    console.error(`Report background processing failed: ${error.message}`);
+    // We don't send an error response since we already responded to the client
   }
 };
+
+// Separate function to handle Firestore saving in the background
+async function saveReportToFirestore(reportData) {
+  try {
+    // Add report to the 'reports' collection
+    const reportRef = await db.collection('reports').add(reportData);
+    console.log(`Report saved to Firestore with ID: ${reportRef.id}`);
+  } catch (error) {
+    console.error(`Firestore save failed: ${error.message}`);
+    
+    // Log failed reports
+    try {
+      console.log(`Failed report details: ${JSON.stringify(reportData)}`);
+    } catch (logError) {
+      console.error(`Failed to log report details: ${logError.message}`);
+    }
+  }
+}
 
 module.exports = {
   submitReport

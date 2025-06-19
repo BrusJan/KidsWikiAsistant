@@ -329,25 +329,30 @@ export class HomeComponent implements OnInit, OnDestroy {
     const response = this.responses.find(r => r.id === this.selectedResponseId);
     if (!response) return;
 
-    // Mark response as reported
-    if (response) {
-      response.reported = true;
-      this.saveToLocalStorage();
-    }
+    // Get the current user's email from the auth service
+    this.user$.pipe(take(1)).subscribe(user => {
+      const userEmail = user?.email || 'anonymous@user.com';
 
-    this.http.post(`${environment.apiUrl}/api/main/report`, {
-      responseId: this.selectedResponseId,
-      query: response.query,
-      text: this.reportText,
-      responseText: response.kidsFriendlySummary,
-    }).subscribe({
-      next: () => {
-        console.log('Report submitted successfully');
-        this.closeReportPopup();
-      },
-      error: (error) => {
-        console.error('Error submitting report:', error);
-      }
+      this.http.post(`${environment.apiUrl}/api/main/report`, {
+        responseId: this.selectedResponseId,
+        query: response.query,
+        text: this.reportText,
+        responseText: response.kidsFriendlySummary,
+        userEmail: userEmail // Always use the authenticated user's email
+      }).subscribe({
+        next: () => {
+          console.log('Report submitted successfully');
+          // Mark response as reported
+          if (response) {
+            response.reported = true;
+            this.saveToLocalStorage();
+          }
+          this.closeReportPopup();
+        },
+        error: (error) => {
+          console.error('Error submitting report:', error);
+        }
+      });
     });
   }
 

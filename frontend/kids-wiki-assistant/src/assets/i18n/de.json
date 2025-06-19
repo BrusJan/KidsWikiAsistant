@@ -9,10 +9,6 @@
   "app.back.home": "Zurück zur Startseite",
   "app.limit.exceeded": "Du hast die maximale Anzahl an Anfragen erreicht. Bitte aktiviere ein Abonnement, um fortzufahren.",
   "app.error.not_logged_in": "Bitte melde dich an, um zu suchen",
-  "app.report.title": "Ein Problem melden",
-  "app.report.description": "Du kannst weitere Details angeben, wenn du möchtest.",
-  "app.report.submit": "Senden",
-  "app.report.close": "Schließen",
   "profile.title": "Benutzerprofil",
   "profile.subtitle": "Abonnementverwaltung und Kontoeinstellungen",
   "profile.email": "E-Mail",
@@ -134,5 +130,10 @@
   "privacy.changes": "Änderungen dieser Datenschutzrichtlinie",
   "privacy.changes_text": "Wir können diese Datenschutzrichtlinie von Zeit zu Zeit aktualisieren. Wir werden dich über Änderungen informieren, indem wir die neue Datenschutzrichtlinie auf dieser Seite veröffentlichen und das Datum der 'letzten Aktualisierung' aktualisieren.",
   "privacy.contact": "Kontaktiere uns",
-  "privacy.contact_text": "Wenn du Fragen zu dieser Datenschutzrichtlinie hast, kontaktiere uns bitte unter info@vikitorek.com."
+  "privacy.contact_text": "Wenn du Fragen zu dieser Datenschutzrichtlinie hast, kontaktiere uns bitte unter info@vikitorek.com.",
+  "report.title": "Problem melden",
+  "report.description_label": "Sie können Details angeben, wenn Sie möchten.",
+  "report.description_placeholder": "Was stimmt mit der Antwort nicht?",
+  "report.close_button": "Schließen",
+  "report.submit_button": "Absenden"
 }

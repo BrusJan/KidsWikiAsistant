@@ -9,10 +9,6 @@
   "app.back.home": "Torna alla homepage",
   "app.limit.exceeded": "Hai raggiunto il numero massimo di ricerche. Per continuare, attiva un abbonamento.",
   "app.error.not_logged_in": "Per favore, accedi per effettuare una ricerca",
-  "app.report.title": "Segnala un problema",
-  "app.report.description": "Puoi fornire maggiori dettagli se lo desideri.",
-  "app.report.submit": "Invia",
-  "app.report.close": "Chiudi",
   "profile.title": "Profilo Utente",
   "profile.subtitle": "Gestione abbonamenti e impostazioni account",
   "profile.email": "Email",
@@ -116,7 +112,7 @@
   "privacy.title": "Informativa sulla Privacy",
   "privacy.last_updated": "Ultimo aggiornamento",
   "privacy.introduction": "Introduzione",
-  "privacy.introduction_text": "Questa Informativa sulla Privacy spiega come raccogliamo, utilizziamo e condividiamo le tue informazioni personali quando utilizzi il nostro servizio Kids Wiki Assistant.",
+  "privacy.introduzione_text": "Questa Informativa sulla Privacy spiega come raccogliamo, utilizziamo e condividiamo le tue informazioni personali quando utilizzi il nostro servizio Kids Wiki Assistant.",
   "privacy.info_collected": "Informazioni che raccogliamo",
   "privacy.info_collected_text": "Raccogliamo le informazioni che ci fornisci direttamente, come il tuo indirizzo email, nome utente e informazioni sull'account quando ti registri. Raccogliamo anche informazioni sul tuo utilizzo del servizio, incluse le query di ricerca e le interazioni.",
   "privacy.data_usage": "Come utilizziamo le tue informazioni",
@@ -134,5 +130,10 @@
   "privacy.changes": "Modifiche a questa Informativa sulla Privacy",
   "privacy.changes_text": "Potremmo aggiornare la nostra Informativa sulla Privacy di tanto in tanto. Ti informeremo di eventuali modifiche pubblicando la nuova Informativa sulla Privacy su questa pagina e aggiornando la data dell'ultimo aggiornamento.",
   "privacy.contact": "Contattaci",
-  "privacy.contact_text": "Se hai domande su questa Informativa sulla Privacy, ti preghiamo di contattarci all'indirizzo info@vikitorek.com."
+  "privacy.contact_text": "Se hai domande su questa Informativa sulla Privacy, ti preghiamo di contattarci all'indirizzo info@vikitorek.com.",
+  "report.title": "Segnala un problema",
+  "report.description_label": "Puoi fornire maggiori dettagli se lo desideri.",
+  "report.description_placeholder": "Cosa c'è di sbagliato nella risposta?",
+  "report.close_button": "Chiudi",
+  "report.submit_button": "Invia"
 }

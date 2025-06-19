@@ -9,10 +9,6 @@
   "app.back.home": "Retour à la page d'accueil",
   "app.limit.exceeded": "Vous avez atteint le nombre maximum de requêtes. Veuillez activer un abonnement pour continuer.",
   "app.error.not_logged_in": "Veuillez vous connecter pour effectuer une recherche",
-  "app.report.title": "Signaler un problème",
-  "app.report.description": "Vous pouvez fournir plus de détails si vous le souhaitez.",
-  "app.report.submit": "Envoyer",
-  "app.report.close": "Fermer",
   "profile.title": "Profil utilisateur",
   "profile.subtitle": "Gestion des abonnements et paramètres du compte",
   "profile.email": "Email",
@@ -134,5 +130,10 @@
   "privacy.changes": "Modifications de cette Politique de Confidentialité",
   "privacy.changes_text": "Nous pouvons mettre à jour notre Politique de Confidentialité de temps à autre. Nous vous informerons de tout changement en publiant la nouvelle Politique de Confidentialité sur cette page et en mettant à jour la date de 'dernière mise à jour'.",
   "privacy.contact": "Contactez-nous",
-  "privacy.contact_text": "Si vous avez des questions concernant cette Politique de Confidentialité, veuillez nous contacter à info@vikitorek.com."
+  "privacy.contact_text": "Si vous avez des questions concernant cette Politique de Confidentialité, veuillez nous contacter à info@vikitorek.com.",
+  "report.title": "Signaler un problème",
+  "report.description_label": "Vous pouvez fournir plus de détails si vous le souhaitez.",
+  "report.description_placeholder": "Qu'est-ce qui ne va pas avec la réponse ?",
+  "report.close_button": "Fermer",
+  "report.submit_button": "Envoyer"
 }

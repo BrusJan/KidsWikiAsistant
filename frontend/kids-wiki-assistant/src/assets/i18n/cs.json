@@ -9,10 +9,6 @@
   "app.back.home": "Zpět na hlavní stránku",
   "app.limit.exceeded": "Dosáhli jste maximálního počtu dotazů. Pro pokračování si prosím aktivujte předplatné.",
   "app.error.not_logged_in": "Pro vyhledávání se prosím přihlaste",
-  "app.report.title": "Nahlásit problém",
-  "app.report.description": "Můžete upřesnit pokud chcete.",
-  "app.report.submit": "Odeslat",
-  "app.report.close": "Zavřít",
   "profile.title": "Uživatelský profil",
   "profile.subtitle": "Správa předplatného a nastavení účtu",
   "profile.email": "Email",
@@ -134,5 +130,10 @@
   "privacy.changes": "Změny těchto Zásad ochrany osobních údajů",
   "privacy.changes_text": "Tyto Zásady ochrany osobních údajů můžeme čas od času aktualizovat. O jakýchkoli změnách vás budeme informovat zveřejněním nových Zásad ochrany osobních údajů na této stránce a aktualizací data 'poslední aktualizace'.",
   "privacy.contact": "Kontaktujte nás",
-  "privacy.contact_text": "Pokud máte jakékoli dotazy ohledně těchto Zásad ochrany osobních údajů, kontaktujte nás prosím na adrese info@vikitorek.com."
+  "privacy.contact_text": "Pokud máte jakékoli dotazy ohledně těchto Zásad ochrany osobních údajů, kontaktujte nás prosím na adrese info@vikitorek.com.",
+  "report.title": "Nahlásit problém",
+  "report.description_label": "Můžete upřesnit pokud chcete.",
+  "report.description_placeholder": "Co je s odpovědí špatně?",
+  "report.close_button": "Zavřít",
+  "report.submit_button": "Odeslat"
 }

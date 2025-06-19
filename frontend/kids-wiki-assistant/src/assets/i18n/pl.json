@@ -9,10 +9,6 @@
   "app.back.home": "Powrót do strony głównej",
   "app.limit.exceeded": "Osiągnąłeś maksymalną liczbę zapytań. Aktywuj subskrypcję, aby kontynuować.",
   "app.error.not_logged_in": "Zaloguj się, aby wyszukiwać",
-  "app.report.title": "Zgłoś problem",
-  "app.report.description": "Możesz podać więcej szczegółów, jeśli chcesz.",
-  "app.report.submit": "Wyślij",
-  "app.report.close": "Zamknij",
   "profile.title": "Profil użytkownika",
   "profile.subtitle": "Zarządzanie subskrypcją i ustawieniami konta",
   "profile.email": "Email",
@@ -134,5 +130,10 @@
   "privacy.changes": "Zmiany w tej Polityce Prywatności",
   "privacy.changes_text": "Możemy od czasu do czasu aktualizować naszą Politykę Prywatności. O wszelkich zmianach powiadomimy Cię, publikując nową Politykę Prywatności na tej stronie i aktualizując datę 'ostatniej aktualizacji'.",
   "privacy.contact": "Skontaktuj się z nami",
-  "privacy.contact_text": "Jeśli masz jakiekolwiek pytania dotyczące tej Polityki Prywatności, prosimy o kontakt pod adresem info@vikitorek.com."
+  "privacy.contact_text": "Jeśli masz jakiekolwiek pytania dotyczące tej Polityki Prywatności, prosimy o kontakt pod adresem info@vikitorek.com.",
+  "report.title": "Zgłoś problem",
+  "report.description_label": "Możesz podać więcej szczegółów, jeśli chcesz.",
+  "report.description_placeholder": "Co jest nie tak z odpowiedzią?",
+  "report.close_button": "Zamknij",
+  "report.submit_button": "Wyślij"
 }

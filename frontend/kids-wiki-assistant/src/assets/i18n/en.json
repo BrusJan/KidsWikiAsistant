@@ -9,10 +9,6 @@
   "app.back.home": "Back to home page",
   "app.limit.exceeded": "You have reached the maximum number of queries. Please activate a subscription to continue.",
   "app.error.not_logged_in": "Please log in to search",
-  "app.report.title": "Report an issue",
-  "app.report.description": "You can provide more details if you wish.",
-  "app.report.submit": "Submit",
-  "app.report.close": "Close",
   "profile.title": "User Profile",
   "profile.subtitle": "Subscription management and account settings",
   "profile.email": "Email",
@@ -129,5 +125,10 @@
   "privacy.changes": "Changes to This Privacy Policy",
   "privacy.changes_text": "We may update our Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the 'last updated' date.",
   "privacy.contact": "Contact Us",
-  "privacy.contact_text": "If you have any questions about this Privacy Policy, please contact us at info@vikitorek.com."
+  "privacy.contact_text": "If you have any questions about this Privacy Policy, please contact us at info@vikitorek.com.",
+  "report.title": "Report an issue",
+  "report.description_label": "You can provide more details if you wish.",
+  "report.description_placeholder": "What's wrong with the answer?",
+  "report.close_button": "Close",
+  "report.submit_button": "Submit"
 }
