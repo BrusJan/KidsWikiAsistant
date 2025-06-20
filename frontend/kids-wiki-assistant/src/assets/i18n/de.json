@@ -3,6 +3,7 @@
   "app.search.placeholder": "Was möchtest du suchen?",
   "app.search.button": "Suchen",
   "app.search.examples": "Probiere:",
+  "app.search.age": "Alter:",
   "app.login": "Anmelden",
   "app.logout": "Abmelden",
   "app.profile": "Profil",

@@ -3,6 +3,7 @@
   "app.search.placeholder": "Enter a keyword?",
   "app.search.button": "Search",
   "app.search.examples": "Try these:",
+  "app.search.age": "Age:",
   "app.login": "Log in",
   "app.logout": "Log out",
   "app.profile": "Profile",

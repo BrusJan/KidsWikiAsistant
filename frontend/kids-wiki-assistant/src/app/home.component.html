@@ -146,17 +146,32 @@
 
     <form class="flex justify-center mb-8" (submit)="$event.preventDefault(); search()"
       [ngClass]="{'opacity-70': isLoading}">
-      <div class="relative flex-1 max-w-lg">
-        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-600"></i>
-        <input #searchInput type="text" name="searchQuery" [placeholder]="'app.search.placeholder' | translate"
-          [(ngModel)]="searchQuery" [ngModelOptions]="{standalone: true}" (keyup.enter)="search()"
-          [disabled]="isLoading || !(user$ | async)"
-          class="w-full h-12 pl-12 pr-14 text-base border-2 border-input-border rounded-lg outline-none focus:border-primary focus:ring-2 focus:ring-primary/25 disabled:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-70">
+      <div class="relative flex-1 max-w-lg flex items-center gap-2">
+        <!-- Search input -->
+        <div class="relative flex flex-1">
+          <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-600"></i>
+          <input #searchInput type="text" name="searchQuery" [placeholder]="'app.search.placeholder' | translate"
+            [(ngModel)]="searchQuery" [ngModelOptions]="{standalone: true}" (keyup.enter)="search()"
+            [disabled]="isLoading || !(user$ | async)"
+            class="w-full h-12 pl-12 pr-14 text-base border-2 border-input-border rounded-lg outline-none focus:border-primary focus:ring-2 focus:ring-primary/25 disabled:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-70">
 
-        <button type="submit" [disabled]="isLoading || !searchQuery.trim() || !(user$ | async)"
-          class="absolute right-1 top-1 h-10 w-10 bg-primary text-white rounded-md flex items-center justify-center hover:bg-primary/90 disabled:opacity-70 disabled:cursor-not-allowed shadow-lg hover:shadow-xl">
-          <i class="fas fa-search text-lg"></i>
-        </button>
+          <!-- Age selector combobox -->
+          <div class="absolute right-12 top-1 flex items-center shrink-0">
+            <label for="ageSelect" class="text-sm text-gray-600 mr-2">{{ 'app.search.age' | translate }}</label>
+            <select id="ageSelect" [(ngModel)]="selectedAge" name="selectedAge"
+              class="h-10 px-2 text-base border-2 border-input-border rounded-lg outline-none focus:border-primary focus:ring-2 focus:ring-primary/25"
+              [disabled]="isLoading || !(user$ | async)">
+              <option value="3">3</option>
+              <option value="5">5</option>
+              <option value="7">7</option>
+              <option value="9">9</option>
+            </select>
+          </div>
+          <button type="submit" [disabled]="isLoading || !searchQuery.trim() || !(user$ | async)"
+            class="absolute right-1 top-1 h-10 w-10 bg-primary text-white rounded-md flex items-center justify-center hover:bg-primary/90 disabled:opacity-70 disabled:cursor-not-allowed shadow-lg hover:shadow-xl">
+            <i class="fas fa-search text-lg"></i>
+          </button>
+        </div>
       </div>
     </form>
 
@@ -198,9 +213,7 @@
             <i class="fas fa-external-link-alt"></i>
           </a>
 
-          <button 
-            *ngIf="!response.reported"
-            (click)="reportResponseIssue(response.id)"
+          <button *ngIf="!response.reported" (click)="reportResponseIssue(response.id)"
             class="absolute bottom-2 right-2 w-6 h-6 flex items-center justify-center rounded-full hover:bg-red-50 text-red-300 hover:text-red-500 transition-colors"
             title="Nahlásit problém">
             <i class="fas fa-flag text-sm"></i>

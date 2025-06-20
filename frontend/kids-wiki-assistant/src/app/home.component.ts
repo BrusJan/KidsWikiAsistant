@@ -58,6 +58,9 @@ export class HomeComponent implements OnInit, OnDestroy {
   selectedResponseId?: number;
   reportText = '';
 
+  // Add the selectedAge property with default value
+  selectedAge: number = 7;
+
   // Add mobile menu state property
   showMobileMenu = false;
 
@@ -221,13 +224,14 @@ export class HomeComponent implements OnInit, OnDestroy {
     // Get current language from language service
     const currentLanguage = this.languageService.getCurrentLanguage();
 
-    console.log('Searching with userId:', user.uid, 'language:', currentLanguage);
+    console.log('Searching with userId:', user.uid, 'language:', currentLanguage, 'age:', this.selectedAge);
 
     this.http.get(`${environment.apiUrl}/api/main/kids-summary`, {
       params: {
         query: this.searchQuery,
         userId: user.uid,
-        language: currentLanguage // Add language parameter
+        language: currentLanguage,
+        age: this.selectedAge.toString() // Add age parameter to the request
       }
     })
       .pipe(timeout(30000))
