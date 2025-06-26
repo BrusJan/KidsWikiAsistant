@@ -135,5 +135,6 @@
   "report.description_label": "Puede proporcionar más detalles si lo desea.",
   "report.description_placeholder": "¿Qué está mal con la respuesta?",
   "report.close_button": "Cerrar",
-  "report.submit_button": "Enviar"
+  "report.submit_button": "Enviar",
+  "app.search.read_more": "Leer más en Wikipedia"
 }

@@ -136,5 +136,6 @@
   "report.description_label": "Vous pouvez fournir plus de détails si vous le souhaitez.",
   "report.description_placeholder": "Qu'est-ce qui ne va pas avec la réponse ?",
   "report.close_button": "Fermer",
-  "report.submit_button": "Envoyer"
+  "report.submit_button": "Envoyer",
+  "app.search.read_more": "Lire plus sur Wikipédia"
 }

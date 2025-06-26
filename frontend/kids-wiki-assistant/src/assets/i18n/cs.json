@@ -136,5 +136,6 @@
   "report.description_label": "Můžete upřesnit pokud chcete.",
   "report.description_placeholder": "Co je s odpovědí špatně?",
   "report.close_button": "Zavřít",
-  "report.submit_button": "Odeslat"
+  "report.submit_button": "Odeslat",
+  "app.search.read_more": "Číst více na Wikipedii"
 }
